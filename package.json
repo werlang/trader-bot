@@ -1,0 +1,16 @@
+{
+  "name": "trader",
+  "version": "1.0.0",
+  "description": "trader bot",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "mysql2": "^2.3.3",
+    "node-fetch": "^2.6.7"
+  }
+}
