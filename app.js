@@ -13,9 +13,13 @@ process.argv.forEach((val, index, array) => {
 
 if (args.scanFile) {
     const scanConfig = JSON.parse(fs.readFileSync(`${__dirname}/${args.scanFile}`));
-    const scanner = require('./scanner')(scanConfig);
+    const scanner = require('./modules/scanner')(scanConfig);
     console.log('Scanner module loaded');
     scanner.scan().then(() => running = false);
+}
+else {
+    const trader = require('./modules/trader')();
+    console.log('Trader module loaded');
 }
 
 // keep the node app running
