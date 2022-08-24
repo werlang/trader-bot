@@ -9,16 +9,21 @@ process.argv.forEach((val, index, array) => {
     if ((val == '-s' || val == '--scan') && array[index+1]){
         args.scanFile = array[index+1];
     }
+    if ((val == '-t' || val == '--trader') && array[index+1]){
+        args.traderFile = array[index+1];
+    }
 });
 
 if (args.scanFile) {
-    const scanConfig = JSON.parse(fs.readFileSync(`${__dirname}/${args.scanFile}`));
+    const scanConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.scanFile }`));
     const scanner = require('./modules/scanner')(scanConfig);
     console.log('Scanner module loaded');
     scanner.scan().then(() => running = false);
 }
-else {
-    const trader = require('./modules/trader')();
+else if (args.traderFile) {
+    const traderConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.traderFile }`));
+    const trader = require('./modules/trader')(traderConfig);
+    trader.trade();
     console.log('Trader module loaded');
 }
 
