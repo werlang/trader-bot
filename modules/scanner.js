@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 
-const db = require('./database')();
+const db = require('../helper/database')();
 
 const scanner = {
     url: 'https://api.binance.com/api/v3',
