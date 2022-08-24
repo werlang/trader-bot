@@ -7,30 +7,56 @@ const scanner = {
     candles: {},
     resolution: 60, // 1 minute resolution
 
+    getMissingCandles: async function() {
+        const fromTime = this.getCandleId(this.config.fromTime);
+        const toTime = this.getCandleId(this.config.toTime);
+
+        const sql = `SELECT id, tsopen FROM candles WHERE id BETWEEN ? AND ?`;// AND id NOT BETWEEN 27349956 AND 27349965 AND id NOT BETWEEN 27570000 AND 27570150`;
+        const [ rows, error ] = await db.query(sql, [ fromTime, toTime ]);
+
+        // here we pick ranges present in database. ex: [1,10,12,23,56,99]
+        const ranges = rows.map(e => e.id).filter((e,i,a) => e+1 != a[i+1] || e-1 != a[i-1]);
+
+        // if the start of the range is not fetched
+        if (ranges[0] > fromTime) {
+            return fromTime;
+        }
+
+        // if the end of the range is not fetched
+        if (ranges[ ranges.length - 1 ] < toTime) {
+            return ranges[ ranges.length - 1 ];
+        }
+
+        // i=1 is the end of the first range. this should be the fromTime of the request
+        return ranges.length ? ranges[1] : fromTime;
+    },
+
     scan: async function() {
         const endpoint = 'klines';
-        
+
+        const missing = await this.getMissingCandles();
         const query = {
             symbol: this.config.symbol,
             interval: '1m',
-            startTime: new Date(this.config.fromTime).getTime(),
+            startTime: this.getTimestampFromCandleId(missing),
             endTime: this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime(),
             limit: 1000,
         }
 
         console.log(`Querying exchange...`);
 
-        const req = await fetch(`${ this.url }/${ endpoint }?${ new URLSearchParams(query).toString() }`, {
+        const url = `${ this.url }/${ endpoint }?${ new URLSearchParams(query).toString() }`;
+        const req = await fetch(url, {
             headers: { "X-MBX-APIKEY": this.config.apiKey }
         });
         const data = await req.json();
+        // console.log(data)
 
         await this.save(data);
 
         const toSave = new Date(data.slice(-1)[0][0]).getTime();
 
         if (data.length && toSave < query.endTime) {
-            this.config.fromTime = toSave;
             await this.scan();
         }
         return true;
@@ -45,7 +71,7 @@ const scanner = {
         
         const inserts = await Promise.all( data.map(async candle => {
             const data = {
-                id: parseInt(candle[0] / 1000 / this.resolution),
+                id: this.getCandleId(candle[0]),
                 tsOpen: new Date(candle[0]),
                 open: candle[1],
                 high: candle[2],
@@ -66,6 +92,19 @@ const scanner = {
             }
         });
     },
+
+    getCandleId: function(time) {
+        try {
+            return parseInt(new Date(time).getTime() / 1000 / this.resolution);
+        }
+        catch(err) {
+            return parseInt(new Date().getTime() / 1000 / this.resolution);
+        }
+    },
+
+    getTimestampFromCandleId(id) {
+        return new Date(id * this.resolution * 1000).getTime();
+    }
 };
 
 module.exports = config => {
