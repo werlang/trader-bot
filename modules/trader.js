@@ -8,7 +8,7 @@ const trader = {
 
     trade: async function() {
         this.currentCandle = new Date(this.config.fromTime);
-        const strategy = require(`../strats/${ this.config.strategy }`);
+        const strategy = require(`../strategies/${ this.config.strategy }`);
         this.api = require('../helper/api')(this, strategy);
 
         this.strategy = strategy;
@@ -35,24 +35,15 @@ const trader = {
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
     fetchCandle: async function() {
-        const fromId = await (async ts => {
-            const sql = `SELECT id FROM candles WHERE ? BETWEEN tsopen AND tsclose`;
-            const [ rows, error ] = await db.query(sql, [ ts ]);
-            return rows.length ? rows[0].id : false;
-        })( this.currentCandle );
-
         const nextCandle = new Date(new Date(this.currentCandle).getTime() + (this.config.timeframe * 1000 * 60));
-        const toId = await (async ts => {
-            const sql = `SELECT id FROM candles WHERE ? BETWEEN tsopen AND tsclose`;
-            const [ rows, error ] = await db.query(sql, [ ts ]);
-            return rows.length ? rows[0].id : false;
-        })( nextCandle );
+        const fromId = this.getCandleId(this.currentCandle);
+        const toId = this.getCandleId(nextCandle);
 
         if (!fromId || !toId) {
             console.log(`Candle not available: ${ this.currentCandle.toISOString() }`)
             return false;
         }
-
+        
         const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
 
@@ -71,6 +62,10 @@ const trader = {
         this.currentCandle = nextCandle;
 
         return candle;
+    },
+
+    getCandleId: function(time) {
+        return parseInt(new Date(time).getTime() / 1000 / 60);
     },
 };
 

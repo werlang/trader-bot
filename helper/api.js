@@ -28,9 +28,11 @@ const api = {
             api.wallet.currency += amount * price;
         }
 
-        console.log(`Swapped: ${ amount } ${ currency ? 'C' : 'A' } @ ${ price }`);
-        console.log(`Wallet: ${ JSON.stringify(api.wallet) }`);
-        console.log(`Total balance: $${ api.wallet.currency + api.wallet.asset * price }`);
+        let msg = api.candle.tsclose.toISOString() + '\t';
+        msg += `SWAPPED: ${ amount.toFixed(8) } ${ currency ? 'C' : 'A' } @ ${ price }\t`;
+        msg += `WALLET: (A) ${ api.wallet.asset.toFixed(8) }, (C) ${ api.wallet.currency.toFixed(2) }\t`;
+        msg += `TOTAL BALANCE: $${ (api.wallet.currency + api.wallet.asset * price).toFixed(2) }`;
+        console.log(msg);
         return true;
     },
 
