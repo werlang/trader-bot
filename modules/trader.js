@@ -1,19 +1,27 @@
-// TODO
-// NEED TO ADD A METHOD TO VERIFY IF THE TRADE IS MISSING CANDLES OR NOT.
-// INTERRUPT TRADE IF MISSING CANDLES.
-// MAYBE ADD OPTION TO FETCH WHEN NEEDED.
-
 const db = require('../helper/database')();
 
 const trader = {
+    step: async function() {
+        if (this.currentCandle.getTime() > new Date(this.config.toTime).getTime()) {
+            return;
+        }
+
+        const candle = await this.fetchCandle();
+        if (!candle) return false;
+
+        this.strategy.update(candle);
+
+        await this.step();
+    },
 
     trade: async function() {
         this.currentCandle = new Date(this.config.fromTime);
+        const strategy = require(`../strats/${ this.config.strategy }`);
+        strategy.init();
+        this.strategy = strategy;
 
-        for (let i=0 ; i<50 ; i++) {
-            const c = await this.fetchCandle();
-            console.log(c)
-        }
+        await this.step();
+        return;
     },
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
@@ -21,15 +29,20 @@ const trader = {
         const fromId = await (async ts => {
             const sql = `SELECT id FROM candles WHERE ? BETWEEN tsopen AND tsclose`;
             const [ rows, error ] = await db.query(sql, [ ts ]);
-            return rows[0].id;
-        })( new Date(this.currentCandle) );
+            return rows.length ? rows[0].id : false;
+        })( this.currentCandle );
 
         const nextCandle = new Date(new Date(this.currentCandle).getTime() + (this.config.timeframe * 1000 * 60));
         const toId = await (async ts => {
             const sql = `SELECT id FROM candles WHERE ? BETWEEN tsopen AND tsclose`;
             const [ rows, error ] = await db.query(sql, [ ts ]);
-            return rows[0].id;
+            return rows.length ? rows[0].id : false;
         })( nextCandle );
+
+        if (!fromId || !toId) {
+            console.log(`Candle not available: ${ this.currentCandle.toISOString() }`)
+            return false;
+        }
 
         const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);

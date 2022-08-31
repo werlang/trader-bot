@@ -23,7 +23,7 @@ if (args.scanFile) {
 else if (args.traderFile) {
     const traderConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.traderFile }`));
     const trader = require('./modules/trader')(traderConfig);
-    trader.trade();
+    trader.trade().then(() => running = false);
     console.log('Trader module loaded');
 }
 
