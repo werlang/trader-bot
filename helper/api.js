@@ -1,37 +1,56 @@
 const api = {
-    init: function(strategy) {
-        strategy.open = this.open;
-        strategy.close = this.close;
-        strategy.getPosition = this.getPosition;
-        strategy.getBalance = this.getBalance;
+    init: function() {
+        api.strategy.setWalletBalance = api.setWalletBalance;
+        api.strategy.getWallet = api.getWallet;
+        api.strategy.swap = api.swap;
     },
 
-    open: function(size) {
-        const price = api.trader.candleData.close;
+    // swap value * currency for asset
+    swap: function(amount, currency=true) {
+        const price = api.candle.close;
 
-        api.trader.position += size / price;
-        api.trader.wallet -= size;
-        console.log(`Opened position: ${ size / price } @ ${ price }`);
-        console.log(`Current position: ${ api.trader.position }`);
-        console.log(`Current balance: $${ api.trader.wallet }`);
-        console.log(`Liquid balance: $${ api.trader.wallet + api.trader.position * price }`);
+        if (currency && api.wallet.currency < amount) {
+            console.log('Not enough currency balance to perform this swap.');
+            return false;
+        }
+
+        if (!currency && api.wallet.asset < amount) {
+            console.log('Not enough asset balance to perform this swap.');
+            return false;
+        }
+
+        if (currency) {
+            api.wallet.currency -= amount;
+            api.wallet.asset += amount / price;
+        }
+        else {
+            api.wallet.asset -= amount;
+            api.wallet.currency += amount * price;
+        }
+
+        console.log(`Swapped: ${ amount } ${ currency ? 'C' : 'A' } @ ${ price }`);
+        console.log(`Wallet: ${ JSON.stringify(api.wallet) }`);
+        console.log(`Total balance: $${ api.wallet.currency + api.wallet.asset * price }`);
+        return true;
     },
 
-    close: function(size) {
-        console.log(size)
+    setWalletBalance: function(value) {
+        if (api.strategy.started) {
+            console.log('setWalletBalance method only allowed inside init');
+            return false;
+        }
+
+        api.wallet.currency = value;
     },
 
-    getPosition: function() {
-        return api.trader.position;
-    },
-
-    getBalance: function() {
-        return api.trader.wallet;
+    getWallet: function() {
+        return api.wallet;
     },
 }
 
 module.exports = (trader, strategy) => {
-    api.init(strategy);
-    api.trader = trader;
+    api.strategy = strategy;
+    api.init();
+    api.wallet = trader.wallet;
     return api;
 };

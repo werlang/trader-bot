@@ -1,16 +1,19 @@
 const db = require('../helper/database')();
 
 const trader = {
-    wallet: 0, 
-    position: 0,
+    wallet: {
+        asset: 0,
+        currency: 0,
+    },
 
     trade: async function() {
         this.currentCandle = new Date(this.config.fromTime);
         const strategy = require(`../strats/${ this.config.strategy }`);
-        require('../helper/api')(this, strategy);
+        this.api = require('../helper/api')(this, strategy);
 
         this.strategy = strategy;
         strategy.init();
+        strategy.started = true;
 
         await this.step();
         return;
@@ -24,7 +27,7 @@ const trader = {
         const candle = await this.fetchCandle();
         if (!candle) return false;
 
-        this.candleData = candle;
+        this.api.candle = candle;
         this.strategy.update(candle);
 
         await this.step();
