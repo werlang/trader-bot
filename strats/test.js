@@ -4,7 +4,9 @@ const strategy = {
     },
 
     update: function(candle) {
-        console.log(candle);
+        // console.log(candle);
+
+        this.open(100);
     }
 }
 

@@ -1,6 +1,21 @@
 const db = require('../helper/database')();
 
 const trader = {
+    wallet: 0, 
+    position: 0,
+
+    trade: async function() {
+        this.currentCandle = new Date(this.config.fromTime);
+        const strategy = require(`../strats/${ this.config.strategy }`);
+        require('../helper/api')(this, strategy);
+
+        this.strategy = strategy;
+        strategy.init();
+
+        await this.step();
+        return;
+    },
+
     step: async function() {
         if (this.currentCandle.getTime() > new Date(this.config.toTime).getTime()) {
             return;
@@ -9,19 +24,10 @@ const trader = {
         const candle = await this.fetchCandle();
         if (!candle) return false;
 
+        this.candleData = candle;
         this.strategy.update(candle);
 
         await this.step();
-    },
-
-    trade: async function() {
-        this.currentCandle = new Date(this.config.fromTime);
-        const strategy = require(`../strats/${ this.config.strategy }`);
-        strategy.init();
-        this.strategy = strategy;
-
-        await this.step();
-        return;
     },
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
