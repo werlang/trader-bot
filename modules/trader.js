@@ -15,7 +15,12 @@ const trader = {
         strategy.init();
         strategy.started = true;
 
-        await this.step();
+        this.data = await this.fetchData();
+
+        this.running = true;
+        while(this.running) {
+            await this.step();
+        }
         return;
     },
 
@@ -24,28 +29,41 @@ const trader = {
             return;
         }
 
-        const candle = await this.fetchCandle();
-        if (!candle) return false;
+        const candle = this.buildCandle();
+        if (!candle) {
+            this.running = false;
+            return false;
+        };
 
         this.api.candle = candle;
         this.strategy.update(candle);
+    },
 
-        await this.step();
+    fetchData: async function() {
+        const fromId = this.getCandleId(this.config.fromTime);
+        const toId = this.getCandleId(this.config.toTime);
+        
+        const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
+        const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
+
+        return rows;
     },
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
-    fetchCandle: async function() {
+    buildCandle: function() {
         const nextCandle = new Date(new Date(this.currentCandle).getTime() + (this.config.timeframe * 1000 * 60));
         const fromId = this.getCandleId(this.currentCandle);
         const toId = this.getCandleId(nextCandle);
 
         if (!fromId || !toId) {
-            console.log(`Candle not available: ${ this.currentCandle.toISOString() }`)
+            if (this.config.verbose > 0) {
+                console.log(`Candle not available: ${ this.currentCandle.toISOString() }`)
+            }
             return false;
         }
         
-        const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
-        const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
+        const rows = this.data.filter(e => e.id >= fromId && e.id <= toId);
+        if (!rows.length) return false;
 
         const candle = {};
         rows.forEach(row => {
