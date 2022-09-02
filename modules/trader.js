@@ -13,6 +13,10 @@ const trader = {
 
         this.strategy = strategy;
         strategy.init();
+
+        this.report.startingTime = new Date(this.config.fromTime).toISOString();
+        this.report.endingTime = new Date(this.config.toTime).toISOString();
+
         this.report.startingBalance = this.wallet.currency;
         this.report.feePaid = 0;
         this.report.swaps = 0;
@@ -22,7 +26,8 @@ const trader = {
         this.data = await this.fetchData();
 
         this.report.startingPrice = parseFloat(this.data[0].open);
-        this.report.moment = [];
+        this.report.wallet = [];
+        this.report.market = [];
 
         this.running = true;
         while(this.running) {
@@ -30,6 +35,7 @@ const trader = {
         }
 
         this.showReport();
+        Object.entries(this.report).forEach(([k,v]) => this.wsData[k] = v);
 
         return;
     },
@@ -46,8 +52,9 @@ const trader = {
         };
 
         this.api.candle = candle;
-        this.report.moment.push( this.api.getWalletBalance() );
         this.strategy.update(candle);
+        this.report.market.push( candle.close );
+        this.report.wallet.push( {...this.api.getWallet()} );
     },
 
     fetchData: async function() {
@@ -115,20 +122,21 @@ const trader = {
         
 
         const pa = require('portfolio-analytics');
-        const riskFreeArray = (data => {
-            const arr = Array(data.length).fill(0);
+        const riskFreeArray = (size => {
+            const arr = Array(size).fill(0);
             for (let i in arr) {
                 let aprm = Math.pow(1.01, 1/30/24/60); // apr each minute
                 arr[i] = i == 0 ? this.report.startingBalance : arr[i-1] * Math.pow(aprm, this.config.timeframe);
             }
             return arr;
-        })(this.report.moment);
-        this.report.sharpe = pa.sharpeRatio(this.report.moment, riskFreeArray);
-        this.report.drawDown = pa.maxDrawdown(this.report.moment);
+        })(this.report.wallet.length);
+        const balance = this.report.wallet.map((e,i) => e.currency + e.asset * this.report.market[i]);
+        this.report.sharpe = pa.sharpeRatio(balance, riskFreeArray);
+        this.report.drawDown = pa.maxDrawdown(balance);
 
         let msg = `\n\n\t--- TRADING SUMMARY ---\n\n`;
-        msg += `Starting time: \t\t${new Date(this.config.fromTime).toISOString()}\n`;
-        msg += `Ending time: \t\t${new Date(this.config.toTime).toISOString()}\n`;
+        msg += `Starting time: \t\t${this.report.startingTime}\n`;
+        msg += `Ending time: \t\t${this.report.endingTime}\n`;
         msg += `Period: \t\t${this.report.period} days\n\n`;
 
         msg += `Starting price: \t$${this.report.startingPrice.toFixed(2)}\n`;
@@ -150,7 +158,8 @@ const trader = {
     },
 };
 
-module.exports = config => {
+module.exports = (config, wsData) => {
     trader.config = config;
+    trader.wsData = wsData;
     return trader;
 }
