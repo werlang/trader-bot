@@ -53,11 +53,6 @@ const scanner = {
             return fromTime;
         }
 
-        // if the end of the range is not fetched
-        if (ranges[ ranges.length - 1 ] < toTime) {
-            return ranges[ ranges.length - 1 ];
-        }
-
         // i=1 is the end of the first range. this should be the fromTime of the request
         return ranges.length ? ranges[1] : fromTime;
     },
