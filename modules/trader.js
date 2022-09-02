@@ -12,6 +12,7 @@ const trader = {
         this.api = require('../helper/api')(this, strategy);
 
         this.strategy = strategy;
+        this.wallet.currency = this.config.startingBalance || 100;
         strategy.init();
 
         this.report.startingTime = new Date(this.config.fromTime).toISOString();
@@ -24,6 +25,10 @@ const trader = {
         strategy.started = true;
 
         this.data = await this.fetchData();
+        if (!this.data) {
+            this.running = false;
+            return;
+        }
 
         this.report.startingPrice = parseFloat(this.data[0].open);
         this.report.wallet = [];
@@ -61,8 +66,23 @@ const trader = {
         const fromId = this.getCandleId(this.config.fromTime);
         const toId = this.getCandleId(this.config.toTime);
         
-        const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
+        const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ?`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
+
+        if (fromId != rows[0].id) {
+            console.log(fromId , rows[0].id)
+            if (this.config.verbose > 0) {
+                console.log(`Candle not available: ${ this.getDateFromCandleId(fromId).toISOString() }`)
+            }
+            return false;
+        }
+        if (toId != rows[rows.length-1].id) {
+            console.log(toId , rows[rows.length-1].id)
+            if (this.config.verbose > 0) {
+                console.log(`Candle not available: ${ this.getDateFromCandleId(toId).toISOString() }`)
+            }
+            return false;
+        }
 
         return rows;
     },
@@ -73,15 +93,13 @@ const trader = {
         const fromId = this.getCandleId(this.currentCandle);
         const toId = this.getCandleId(nextCandle);
 
-        if (!fromId || !toId) {
+        const rows = this.data.filter(e => e.id >= fromId && e.id <= toId);
+        if (!rows.length) {
             if (this.config.verbose > 0) {
                 console.log(`Candle not available: ${ this.currentCandle.toISOString() }`)
             }
             return false;
         }
-        
-        const rows = this.data.filter(e => e.id >= fromId && e.id <= toId);
-        if (!rows.length) return false;
 
         const candle = {};
         rows.forEach(row => {
@@ -102,6 +120,10 @@ const trader = {
 
     getCandleId: function(time) {
         return parseInt(new Date(time).getTime() / 1000 / 60);
+    },
+
+    getDateFromCandleId(id) {
+        return new Date(id * 60 * 1000);
     },
 
     showReport: function() {

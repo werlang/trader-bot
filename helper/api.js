@@ -42,17 +42,6 @@ const api = {
         return true;
     },
 
-    setWalletBalance: function(value) {
-        if (api.strategy.started) {
-            if (api.verbose > 0) {
-                console.log('setWalletBalance method only allowed inside init');
-            }
-            return false;
-        }
-
-        api.wallet.currency = value;
-    },
-
     getWallet: function() {
         return api.wallet;
     },
@@ -63,7 +52,6 @@ const api = {
 }
 
 module.exports = (trader, strategy) => {
-    strategy.setWalletBalance = api.setWalletBalance;
     strategy.getWallet = api.getWallet;
     strategy.getWalletBalance = api.getWalletBalance;
     strategy.swap = api.swap;
