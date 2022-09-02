@@ -12,6 +12,9 @@ process.argv.forEach((val, index, array) => {
     if ((val == '-t' || val == '--trader') && array[index+1]){
         args.traderFile = array[index+1];
     }
+    if ((val == '-w' || val == '--web')){
+        require('./webserver');
+    }
 });
 
 if (args.scanFile) {

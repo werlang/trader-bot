@@ -127,8 +127,8 @@ const trader = {
         this.report.drawDown = pa.maxDrawdown(this.report.moment);
 
         let msg = `\n\n\t--- TRADING SUMMARY ---\n\n`;
-        msg += `Starting time: \t\t${this.config.fromTime}\n`;
-        msg += `Ending time: \t\t${this.config.toTime}\n`;
+        msg += `Starting time: \t\t${new Date(this.config.fromTime).toISOString()}\n`;
+        msg += `Ending time: \t\t${new Date(this.config.toTime).toISOString()}\n`;
         msg += `Period: \t\t${this.report.period} days\n\n`;
 
         msg += `Starting price: \t$${this.report.startingPrice.toFixed(2)}\n`;
@@ -139,13 +139,13 @@ const trader = {
         msg += `Ending balance: \t$${this.report.endingBalance.toFixed(2)}\n`;
         msg += `Strategy profit: \t${this.report.walletProfit.toFixed(4)}%\n\n`;
         
-        msg += `Swaps: \t\t\t${this.report.swaps}\n`;
+        msg += `Num. Swaps: \t\t${this.report.swaps}\n`;
         msg += `Fee paid: \t\t$${this.report.feePaid.toFixed(2)}\n\n`;
 
         msg += `APR: \t\t\t${this.report.apr.toFixed(4)}%\n`;
         msg += `APY: \t\t\t${this.report.apy.toFixed(4)}%\n\n`;
-        msg += `Sharpe: \t\t${this.report.sharpe.toFixed(4)}\n`;
-        msg += `Drawdown: \t\t${this.report.drawDown.toFixed(4)}\n`;
+        msg += `Sharpe ratio: \t\t${this.report.sharpe.toFixed(4)}\n`;
+        msg += `Max. Drawdown: \t\t${this.report.drawDown.toFixed(4)}\n`;
         console.log(msg);
     },
 };
