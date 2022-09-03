@@ -3,3 +3,40 @@ body {
     height: 100vh;
     width: 100vw;
 }
+
+#legend {
+    position: absolute;
+    left: 30px;
+    top: 30px;
+    width: 320px;
+    background-color: rgb(112, 122, 151);
+    border: 1px solid rgb(139, 152, 209);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.514);
+    z-index: 1;
+    border-radius: 5px;
+    color: rgb(230, 230, 230);
+    font-family: sans-serif;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+}
+
+#legend.hidden {
+    display: none;
+}
+
+#legend div {
+    margin: 10px 0;
+    font-size: 1rem;
+}
+
+#legend .value,
+#legend .change {
+    color: #c9fad5;
+    font-family: monospace;
+}
+
+#legend .negative .change,
+#legend .negative .value {
+    color: #fac9c9;
+}

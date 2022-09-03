@@ -43,6 +43,7 @@ marketSeries.setData( timeData.map((e,i) => ({
 const getBalance = i => {
     return data.wallet[i].currency + data.wallet[i].asset * data.market[i];
 }
+
 const getColorRatio = i => {
     // green: rgb(38, 166, 154)
     // red: rgb(239, 83, 80)
@@ -91,8 +92,42 @@ function getRightPrecision(amount) {
         precision = 4;
     }
     else {
-        // console.log(amount, integer, decimals)
         precision = decimals ? decimals.split('0').filter(e => e == '').length + 4 : 2;
     }
     return parseFloat(`${ integer }.${ decimals }`).toFixed(precision);
 }
+
+const legend = document.createElement('div');
+legend.id = 'legend';
+legend.classList.add('hidden');
+document.body.insertAdjacentElement('beforeend', legend);
+
+chart.subscribeCrosshairMove(param => {
+	if (!param.time) {
+        return;
+	}
+
+    const walletPrice = param.seriesPrices.get(walletSeries);
+    const marketPrice = param.seriesPrices.get(marketSeries);
+    legend.classList.remove('hidden');
+
+    const marketValue = (marketPrice / data.market[0] - 1) * 100;
+    const walletValue = (walletPrice / getBalance(0) - 1) * 100;
+
+    legend.innerHTML = `
+        <div>
+            <span class="text">Time:</span>
+            <span>${ new Date(param.time * 1000).toUTCString() }</span>
+        </div>
+        <div class="${ (n => n > 0 ? '' : 'negative')(marketValue) }">
+            <span class="text">Market Price:</span>
+            <span class="value">$${ getRightPrecision(marketPrice) }</span>
+            <span class="change">(${ (n => n > 0 ? '+' + n.toFixed(1) : n.toFixed(1))(marketValue) }%)</span>
+        </div>
+        <div class="${ (n => n > 0 ? '' : 'negative')(walletValue) }">
+            <span class="text">Wallet Balance:</span>
+            <span class="value">$${ getRightPrecision(walletPrice) }</span>
+            <span class="change">(${ (n => n > 0 ? '+' + n.toFixed(1) : n.toFixed(1))(walletValue) }%)</span>
+        </div>
+    `
+});
