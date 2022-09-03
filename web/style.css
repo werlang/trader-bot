@@ -8,14 +8,14 @@ body {
     position: absolute;
     left: 30px;
     top: 30px;
-    width: 320px;
+    min-width: 350px;
     background-color: rgb(112, 122, 151);
     border: 1px solid rgb(139, 152, 209);
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.514);
     z-index: 1;
     border-radius: 5px;
-    color: rgb(230, 230, 230);
-    font-family: sans-serif;
+    color: rgb(243, 243, 243);
+    font-family: monospace;
     padding: 5px 10px;
     box-sizing: border-box;
     font-size: 0.9rem;
@@ -26,8 +26,19 @@ body {
 }
 
 #legend div {
-    margin: 10px 0;
+    margin: 5px 0;
     font-size: 1rem;
+}
+
+#legend .text {
+    color: rgb(211, 211, 211);
+    font-family: sans-serif;
+    width: 140px;
+    display: inline-block;
+}
+
+#legend div:first-child .text {
+    width: auto;
 }
 
 #legend .value,

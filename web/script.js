@@ -114,6 +114,12 @@ chart.subscribeCrosshairMove(param => {
     const marketValue = (marketPrice / data.market[0] - 1) * 100;
     const walletValue = (walletPrice / getBalance(0) - 1) * 100;
 
+    const walletData = timeData.map((e,i) => ({
+        time: e,
+        currency: data.wallet[i].currency,
+        asset: data.wallet[i].asset,
+    })).find(e => e.time == param.time);
+    
     legend.innerHTML = `
         <div>
             <span class="text">Time:</span>
@@ -128,6 +134,14 @@ chart.subscribeCrosshairMove(param => {
             <span class="text">Wallet Balance:</span>
             <span class="value">$${ getRightPrecision(walletPrice) }</span>
             <span class="change">(${ (n => n > 0 ? '+' + n.toFixed(1) : n.toFixed(1))(walletValue) }%)</span>
+        </div>
+        <div>
+            <span class="text">Currency in Wallet:</span>
+            <span>$${ getRightPrecision(walletData.currency) }</span>
+        </div>
+        <div>
+            <span class="text">Asset in Wallet:</span>
+            <span>$${ getRightPrecision(walletData.asset) }</span>
         </div>
     `
 });
