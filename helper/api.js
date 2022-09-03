@@ -30,7 +30,12 @@ const api = {
             api.traderReport.feePaid += swapFee * price;
         }
 
-        api.traderReport.swaps++;
+        api.traderReport.swaps.push({
+            time: api.candle.tsopen,
+            price: price,
+            amount: amount,
+            currency: currency,
+        });
 
         if (api.verbose > 1) {
             let msg = api.candle.tsclose.toISOString() + '\t';

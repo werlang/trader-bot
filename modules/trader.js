@@ -20,7 +20,7 @@ const trader = {
 
         this.report.startingBalance = this.wallet.currency;
         this.report.feePaid = 0;
-        this.report.swaps = 0;
+        this.report.swaps = [];
 
         strategy.started = true;
 
@@ -49,6 +49,10 @@ const trader = {
         if (this.currentCandle.getTime() > new Date(this.config.toTime).getTime()) {
             return;
         }
+
+        // const perc = (this.currentCandle.getTime() - new Date(this.config.fromTime).getTime()) / (new Date(this.config.toTime).getTime() - new Date(this.config.fromTime).getTime()) * 100;
+        // if (parseInt(perc) % 10 == 0)
+        //     console.log(`Running strategy... ${perc.toFixed(1)}%`);
 
         const candle = this.buildCandle();
         if (!candle) {
@@ -170,7 +174,7 @@ const trader = {
         msg += `Ending balance: \t$${this.report.endingBalance.toFixed(2)}\n`;
         msg += `Strategy profit: \t${this.report.walletProfit.toFixed(4)}%\n\n`;
         
-        msg += `Num. Swaps: \t\t${this.report.swaps}\n`;
+        msg += `Num. Swaps: \t\t${this.report.swaps.length}\n`;
         msg += `Fee paid: \t\t$${this.report.feePaid.toFixed(2)}\n\n`;
 
         msg += `APR: \t\t\t${this.report.apr.toFixed(4)}%\n`;

@@ -51,7 +51,7 @@ const getColorRatio = i => {
     // b: %74 + 80
 
     const ratio = data.wallet[i].currency / getBalance(i);
-    const r = (255 - (parseInt(ratio * 201) + 38)).toString(16).padStart(2, '0');;
+    const r = (255 - (parseInt(ratio * 201) + 38)).toString(16).padStart(2, '0');
     const g = (parseInt(ratio * 83) + 83).toString(16).padStart(2, '0');
     const b = (parseInt(ratio * 74) + 80).toString(16).padStart(2, '0');
     return `#${ r }${ g }${ b }`;
@@ -65,6 +65,34 @@ walletSeries.setData( timeData.map((e,i) => ({
     color: getColorRatio(i),
 })) );
 
+
+const markers = data.swaps.map(e => ({
+    time: parseInt(new Date(e.time).getTime() / 1000),
+    position: 'inBar',
+    color: e.currency ? 'rgb(38, 166, 154)' : 'rgb(239, 83, 80)',
+    shape: 'circle',
+    text: `${ getRightPrecision(e.amount) } @ ${ getRightPrecision(e.price) }`,
+}));
+walletSeries.setMarkers(markers);
+
+
 window.addEventListener('resize', () => {
     chart.applyOptions({ height: window.innerHeight, width: window.innerWidth });
 });
+
+function getRightPrecision(amount) {
+    const [integer, decimals] = amount.toString().split('.');
+    let precision = 8;
+
+    if (parseInt(integer) >= 100) {
+        precision = 2;
+    }
+    else if (parseInt(integer) > 0) {
+        precision = 4;
+    }
+    else {
+        // console.log(amount, integer, decimals)
+        precision = decimals ? decimals.split('0').filter(e => e == '').length + 4 : 2;
+    }
+    return parseFloat(`${ integer }.${ decimals }`).toFixed(precision);
+}
