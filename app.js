@@ -3,7 +3,6 @@ const fs = require('fs');
 const args = {};
 
 let running = true;
-let wsdata;
 
 // receive args
 process.argv.forEach((val, index, array) => {
@@ -15,7 +14,6 @@ process.argv.forEach((val, index, array) => {
     }
     if ((val == '-w' || val == '--web')){
         args.webServer = true;
-        wsdata = require('./webserver');
     }
 });
 
@@ -27,8 +25,14 @@ if (args.scanFile) {
 }
 else if (args.traderFile) {
     const traderConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.traderFile }`));
-    const trader = require('./modules/trader')(traderConfig, wsdata);
-    trader.trade().then(() => running = false);
+    const wsData = {};
+    const trader = require('./modules/trader')(traderConfig, wsData);
+    trader.trade().then(() => {
+        running = false;
+        if (args.webServer) {
+            require('./webserver')(wsData);
+        }
+    });
     console.log('Trader module loaded');
 }
 

@@ -4,7 +4,7 @@ require('dotenv').config();
 const port = process.env.WEBSERVER_PORT;
 const app = express();
 
-const tradingData = {};
+let tradingData;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -20,7 +20,9 @@ app.get('/data', (req, res) => {
 app.use(express.static(`${__dirname}/web/`));
 
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
+    console.log(`WebServer started.\nCheck your trades on http://localhost:${port}`);
 });
 
-module.exports = tradingData;
+module.exports = data => {
+    tradingData = data;
+}

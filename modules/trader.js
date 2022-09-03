@@ -66,7 +66,8 @@ const trader = {
         const fromId = this.getCandleId(this.config.fromTime);
         const toId = this.getCandleId(this.config.toTime);
         
-        const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ?`;
+        console.log('Querying database');
+        const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
 
         if (fromId != rows[0].id) {
@@ -76,7 +77,7 @@ const trader = {
             }
             return false;
         }
-        if (toId != rows[rows.length-1].id) {
+        if (toId != rows[rows.length-1].id + 1) {
             console.log(toId , rows[rows.length-1].id)
             if (this.config.verbose > 0) {
                 console.log(`Candle not available: ${ this.getDateFromCandleId(toId).toISOString() }`)
