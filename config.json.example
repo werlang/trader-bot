@@ -1,0 +1,12 @@
+{
+    "symbol": "ETHUSDT",
+    "apiKey": "YOUR_API_KEY",
+    "fromTime": "2021-01-01 00:00:00.000",
+    "toTime": "2021-12-21 00:00:00.000",
+    "exchange": "binance",
+    "timeframe": 60,
+    "strategy": "dca",
+    "verbose": 2,
+    "startingBalance": 1000,
+    "swapFee": 0.002
+}

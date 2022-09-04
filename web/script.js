@@ -104,6 +104,7 @@ document.body.insertAdjacentElement('beforeend', legend);
 
 chart.subscribeCrosshairMove(param => {
 	if (!param.time) {
+        legend.classList.add('hidden');
         return;
 	}
 

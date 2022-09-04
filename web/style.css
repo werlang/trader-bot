@@ -19,10 +19,12 @@ body {
     padding: 5px 10px;
     box-sizing: border-box;
     font-size: 0.9rem;
+    transition: 0.5s all;
+    opacity: 1;
 }
 
 #legend.hidden {
-    display: none;
+    opacity: 0;
 }
 
 #legend div {
