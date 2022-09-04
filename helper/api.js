@@ -22,15 +22,15 @@ const api = {
         if (currency) {
             api.wallet.currency -= amount;
             api.wallet.asset += (amount - swapFee) / price;
-            api.traderReport.feePaid += swapFee;
+            api.traderReport.add('feePaid', swapFee);
         }
         else {
             api.wallet.asset -= amount;
             api.wallet.currency += (amount - swapFee) * price;
-            api.traderReport.feePaid += swapFee * price;
+            api.traderReport.add('feePaid', swapFee * price);
         }
 
-        api.traderReport.swaps.push({
+        api.traderReport.append('swaps', {
             time: api.candle.tsopen,
             price: price,
             amount: amount,
@@ -65,7 +65,6 @@ module.exports = (trader, strategy) => {
     api.wallet = trader.wallet;
     api.verbose = trader.config.verbose;
     api.swapFee = trader.config.swapFee;
-    trader.report = {};
     api.traderReport = trader.report;
 
     return api;
