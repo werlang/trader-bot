@@ -107,6 +107,6 @@ const scanner = {
 
 module.exports = config => {
     scanner.config = config;
-    scanner.exchange = require('./'+ config.exchange)(config);
+    scanner.exchange = require('../exchanges/'+ config.exchange)(config);
     return scanner;
 };
