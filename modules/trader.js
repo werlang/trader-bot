@@ -18,10 +18,24 @@ const trader = {
         strategy.init();
         strategy.started = true;
 
-        this.data = await this.fetchData();
-        if (!this.data) {
-            this.running = false;
-            return;
+        if (this.mode == 'backtest') {
+            this.data = await this.queryData();
+            if (!this.data) {
+                this.running = false;
+                return false;
+            }
+        }
+        else if (this.mode == 'live') {
+            console.log('Live trading not implemented yet');
+            return false;
+        }
+        else if (this.mode == 'paper') {
+            console.log('Paper trading not implemented yet');
+            return false;
+        }
+        else {
+            console.log('This mode is not recognized');
+            return false;
         }
 
         this.report.set('startingPrice', parseFloat(this.data[0].open));
@@ -34,7 +48,7 @@ const trader = {
         this.report.show();
         this.report.serveWeb(this.wsData);
 
-        return;
+        return true;
     },
 
     step: async function() {
@@ -58,11 +72,11 @@ const trader = {
         this.report.append('wallet', {...this.api.getWallet()} );
     },
 
-    fetchData: async function() {
+    queryData: async function() {
         const fromId = this.getCandleId(this.config.fromTime);
         const toId = this.getCandleId(this.config.toTime);
         
-        console.log('Querying database');
+        console.log('Querying database and running backtest');
         const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
 
@@ -124,8 +138,11 @@ const trader = {
     },
 };
 
-module.exports = (config, wsData) => {
+module.exports = async ({ config, webServerData, mode }) => {
     trader.config = config;
-    trader.wsData = wsData;
-    return trader;
+    trader.wsData = webServerData;
+    trader.mode = mode;
+    
+    console.log('Trader module loaded');
+    return await trader.trade();
 }
