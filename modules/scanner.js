@@ -1,38 +1,22 @@
-const fetch = require('node-fetch');
-
 const db = require('../helper/database')();
 
 const scanner = {
-    url: 'https://api.binance.com/api/v3',
     candles: {},
     resolution: 60, // 1 minute resolution
 
     scan: async function() {
-        const endpoint = 'klines';
-
         const missing = await this.getMissingCandles();
-        const query = {
-            symbol: this.config.symbol,
-            interval: '1m',
-            startTime: this.getTimestampFromCandleId(missing),
-            endTime: this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime(),
-            limit: 1000,
-        }
-
+        const fromTime = this.getTimestampFromCandleId(missing);
+        const toTime = this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime();
+        
         console.log(`Querying exchange...`);
-
-        const url = `${ this.url }/${ endpoint }?${ new URLSearchParams(query).toString() }`;
-        const req = await fetch(url, {
-            headers: { "X-MBX-APIKEY": this.config.apiKey }
-        });
-        const data = await req.json();
-        // console.log(data)
+        const data = await this.exchange.fetch(fromTime, toTime);
 
         await this.save(data);
 
-        const toSave = new Date(data.slice(-1)[0][0]).getTime();
+        const toSave = new Date(data[ data.length-1 ].tsOpen).getTime();
 
-        if (data.length && toSave < query.endTime) {
+        if (data.length && toSave < toTime) {
             await this.scan();
         }
         return true;
@@ -58,41 +42,34 @@ const scanner = {
     },
 
     save: async function(data) {
-        const fromStr = new Date(data[0][0]).toISOString();
-        const toStr = new Date(data.slice(-1)[0][0]).toISOString();
+        const fromStr = data[0].tsOpen.toISOString();
+        const toStr = data[ data.length-1 ].tsOpen.toISOString();
         console.log(`Saving into database. FROM: ${ fromStr }, TO: ${ toStr }`);
 
         const sql = `INSERT INTO candles (id, open, close, low, high, volume, tsopen, tsclose, samples, missing) VALUES (:id,:open,:close,:low,:high,:volume,:tsOpen,:tsClose,:samples,:missing) ON DUPLICATE KEY UPDATE open = :open, close = :close, low = :low, high = :high, volume = :volume, tsopen = :tsOpen, tsclose = :tsClose, samples = :samples, missing = :missing;`;
         
         const inserts = await Promise.all( data.map(async (candle, i) => {
             const newCandle = {
-                id: this.getCandleId(candle[0]),
-                tsOpen: new Date(candle[0]),
-                open: candle[1],
-                high: candle[2],
-                low: candle[3],
-                close: candle[4],
-                volume: candle[5],
-                tsClose: new Date(candle[6]),
-                samples: candle[8],
+                id: this.getCandleId(candle.tsOpen),
                 missing: 0,
+                ...candle,
             };
 
             // this is a check to see if the data source is missing candles
             if (i > 0) {
-                const diffId = this.getCandleId(candle[0]) - this.getCandleId(data[i-1][0]);
+                const diffId = newCandle.id - this.getCandleId(data[i-1].tsOpen);
                 // if yes, then we create the missing candles from the previous one
                 if (diffId > 1) {
                     const candlePrev = data[i-1];
                     for (let j = 1 ; j < diffId ; j++) {
                         const newCandle = {
-                            id: this.getCandleId(candlePrev[0]) + j,
-                            tsOpen: new Date( parseFloat(candlePrev[0]) + (j * this.resolution * 1000) ),
-                            tsClose: new Date( parseFloat(candlePrev[6]) + (j * this.resolution * 1000) ),
-                            open: candlePrev[1],
-                            high: candlePrev[2],
-                            low: candlePrev[3],
-                            close: candlePrev[4],
+                            id: this.getCandleId(candlePrev.tsOpen) + j,
+                            tsOpen: new Date( parseFloat(candlePrev.tsOpen) + (j * this.resolution * 1000) ),
+                            tsClose: new Date( parseFloat(candlePrev.tsClose) + (j * this.resolution * 1000) ),
+                            open: candlePrev.open,
+                            high: candlePrev.high,
+                            low: candlePrev.low,
+                            close: candlePrev.close,
                             volume: 0,
                             samples: 0,
                             missing: 1,
@@ -130,5 +107,6 @@ const scanner = {
 
 module.exports = config => {
     scanner.config = config;
+    scanner.exchange = require('./'+ config.exchange)(config);
     return scanner;
 };
