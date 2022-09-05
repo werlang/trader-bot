@@ -4,10 +4,17 @@ const scanner = {
     candles: {},
     resolution: 60, // 1 minute resolution
 
-    scan: async function() {
+    scan: async function({ fromTime, toTime }={}) {
+        if (fromTime) {
+            this.config.fromTime = fromTime;
+        }
+        if (toTime) {
+            this.config.toTime = toTime;
+        }
+
         const missing = await this.getMissingCandles();
-        const fromTime = this.getTimestampFromCandleId(missing);
-        const toTime = this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime();
+        fromTime = this.getTimestampFromCandleId(missing);
+        toTime = this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime();
         
         console.log(`Querying exchange...`);
         const data = await this.exchange.fetch(fromTime, toTime);
@@ -105,15 +112,9 @@ const scanner = {
     }
 };
 
-module.exports = async (config, { fromTime, toTime }={}) => {
-    if (fromTime) {
-        config.fromTime = fromTime;
-    }
-    if (toTime) {
-        config.toTime = toTime;
-    }
+module.exports = config => {
     scanner.config = config;
     scanner.exchange = require('../exchanges/'+ config.exchange)(config);
     console.log('Scanner module loaded');
-    return await scanner.scan();
+    return scanner;
 };
