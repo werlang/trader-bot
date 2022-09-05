@@ -8,7 +8,7 @@ const report = {
 
         this.timeframe = config.timeframe;
 
-        this.info.startingBalance = wallet.currency;
+        this.info.startingBalance = config.startingBalance;
         this.info.feePaid = 0;
         this.info.swaps = [];
         this.info.wallet = [];

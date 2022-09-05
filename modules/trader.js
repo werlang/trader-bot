@@ -1,21 +1,16 @@
 const db = require('../helper/database')();
 
 const trader = {
-    wallet: {
-        asset: 0,
-        currency: 0,
-    },
-
     trade: async function() {
         this.currentCandle = new Date(this.config.fromTime);
-        this.wallet.currency = this.config.startingBalance || 100;
-
+        
+        this.wallet = await require('../helper/wallet')(this.mode, this.config);
         const strategy = require(`../strategies/${ this.config.strategy }`);
         this.strategy = strategy;
         this.report = require('../helper/report')(this.config, this.wallet);
         this.api = require('../helper/api')(this, strategy);
         
-        strategy.init();
+        await strategy.init();
         strategy.started = true;
 
         if (this.mode == 'backtest') {
@@ -67,9 +62,9 @@ const trader = {
         };
 
         this.api.candle = candle;
-        this.strategy.update(candle);
+        await this.strategy.update(candle);
         this.report.append('market', candle.close );
-        this.report.append('wallet', {...this.api.getWallet()} );
+        this.report.append('wallet', { ...(await this.api.getWallet()) } );
     },
 
     queryData: async function() {

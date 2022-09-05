@@ -1,16 +1,17 @@
 const api = {
     // swap value * currency for asset
-    swap: function(amount, currency=true) {
+    swap: async function(amount, currency=true) {
         const price = api.candle.close;
+        const wallet = await api.wallet.get();
 
-        if (currency && api.wallet.currency < amount) {
+        if (currency && wallet.currency < amount) {
             if (api.verbose > 0) {
                 console.log('Not enough currency balance to perform trader swap.');
             }
             return false;
         }
 
-        if (!currency && api.wallet.asset < amount) {
+        if (!currency && wallet.asset < amount) {
             if (api.verbose > 0) {
                 console.log('Not enough asset balance to perform this swap.');
             }
@@ -20,13 +21,13 @@ const api = {
         const swapFee = amount * api.swapFee;
 
         if (currency) {
-            api.wallet.currency -= amount;
-            api.wallet.asset += (amount - swapFee) / price;
+            await api.wallet.currency.add(-amount);
+            await api.wallet.asset.add((amount - swapFee) / price);
             api.traderReport.add('feePaid', swapFee);
         }
         else {
-            api.wallet.asset -= amount;
-            api.wallet.currency += (amount - swapFee) * price;
+            await api.wallet.asset.add(-amount);
+            await api.wallet.currency.add((amount - swapFee) * price);
             api.traderReport.add('feePaid', swapFee * price);
         }
 
@@ -38,21 +39,23 @@ const api = {
         });
 
         if (api.verbose > 1) {
+            const wallet = await api.wallet.get();
             let msg = api.candle.tsclose.toISOString() + '\t';
             msg += `SWAPPED: ${ amount.toFixed(8) } ${ currency ? 'C' : 'A' } @ ${ price }\t`;
-            msg += `WALLET: (A) ${ api.wallet.asset.toFixed(8) }, (C) ${ api.wallet.currency.toFixed(2) }\t`;
-            msg += `TOTAL BALANCE: $${ (api.getWalletBalance()).toFixed(2) }`;
+            msg += `WALLET: (A) ${ wallet.asset.toFixed(8) }, (C) ${ wallet.currency.toFixed(2) }\t`;
+            msg += `TOTAL BALANCE: $${ (await api.getWalletBalance()).toFixed(2) }`;
             console.log(msg);
         }
         return true;
     },
 
-    getWallet: function() {
-        return api.wallet;
+    getWallet: async function() {
+        return await api.wallet.get();
     },
 
-    getWalletBalance: function() {
-        return api.wallet.currency + api.wallet.asset * api.candle.close;
+    getWalletBalance: async function() {
+        const wallet = await api.wallet.get();
+        return wallet.currency + wallet.asset * api.candle.close;
     },
 }
 

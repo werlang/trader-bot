@@ -1,13 +1,14 @@
 const strategy = {
 
-    init: function() {
+    init: async function() {
         this.history = [];
         this.maxHistoryLength = 24;
         this.tradingThreshold = 0.15;
         this.tradingAmount = 0.3;
+        return;
     },
 
-    update: function(candle) {
+    update: async function(candle) {
         // record candle history of 24h
         this.history.push(candle);
         if (this.history.length < this.maxHistoryLength) {
@@ -22,16 +23,18 @@ const strategy = {
         
         // change over positive in period, sell asset
         if (change >= this.tradingThreshold) {
-            const amount = this.tradingAmount * this.getWallet().asset;
-            this.swap(amount, false);
+            const amount = this.tradingAmount * (await this.getWallet()).asset;
+            await this.swap(amount, false);
             this.history = [];
         }
         // change below negative in period, buy asset
         else if (change <= -this.tradingThreshold) {
-            const amount = this.tradingAmount * this.getWallet().currency;
-            this.swap(amount, true);
+            const amount = this.tradingAmount * (await this.getWallet()).currency;
+            await this.swap(amount, true);
             this.history = [];
         }
+
+        return;
     }
 }
 
