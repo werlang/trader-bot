@@ -14,7 +14,7 @@ const trader = {
         strategy.started = true;
 
         if (this.mode == 'backtest') {
-            this.data = await this.queryData();
+            this.data = await this.queryData(this.config.fromTime, this.config.toTime);
             if (!this.data) {
                 this.running = false;
                 return false;
@@ -25,8 +25,14 @@ const trader = {
             return false;
         }
         else if (this.mode == 'paper') {
-            console.log('Paper trading not implemented yet');
-            return false;
+            // fetch data for building history window
+            const fromTime = new Date().getTime() - this.config.historySize * 1000 * 60 * this.config.timeframe;
+            this.data = await this.queryData(fromTime, new Date());
+            if (!this.data) {
+                this.running = false;
+                return false;
+            }
+            this.currentCandle = new Date(this.data[ this.data.length-1 ].tsclose);
         }
         else {
             console.log('This mode is not recognized');
@@ -47,15 +53,11 @@ const trader = {
     },
 
     step: async function() {
-        if (this.currentCandle.getTime() > new Date(this.config.toTime).getTime()) {
-            return;
-        }
-
         // const perc = (this.currentCandle.getTime() - new Date(this.config.fromTime).getTime()) / (new Date(this.config.toTime).getTime() - new Date(this.config.fromTime).getTime()) * 100;
         // if (parseInt(perc) % 10 == 0)
         //     console.log(`Running strategy... ${perc.toFixed(1)}%`);
 
-        const candle = this.buildCandle();
+        const candle = await this.buildCandle();
         if (!candle) {
             this.running = false;
             return false;
@@ -67,25 +69,33 @@ const trader = {
         this.report.append('wallet', { ...(await this.api.getWallet()) } );
     },
 
-    queryData: async function() {
-        const fromId = this.getCandleId(this.config.fromTime);
-        const toId = this.getCandleId(this.config.toTime);
+    queryData: async function(fromTime, toTime) {
+        const fromId = this.getCandleId(fromTime);
+        const toId = this.getCandleId(toTime);
         
-        console.log('Querying database and running backtest');
+        if (this.config.verbose >= 2) {
+            console.log('Querying database.');
+        }
         const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
 
+        if (!rows.length) {
+            if (this.config.verbose >= 1) {
+                console.log(`No candles returned from database`);
+            }
+            return false;
+        }
         if (fromId != rows[0].id) {
             console.log(fromId , rows[0].id)
-            if (this.config.verbose > 0) {
-                console.log(`Candle not available: ${ this.getDateFromCandleId(fromId).toISOString() }`)
+            if (this.config.verbose >= 1) {
+                console.log(`Candle not available in database: ${ this.getDateFromCandleId(fromId).toISOString() }`)
             }
             return false;
         }
         if (toId != rows[rows.length-1].id + 1) {
             console.log(toId , rows[rows.length-1].id)
-            if (this.config.verbose > 0) {
-                console.log(`Candle not available: ${ this.getDateFromCandleId(toId).toISOString() }`)
+            if (this.config.verbose >= 1) {
+                console.log(`Candle not available in database: ${ this.getDateFromCandleId(toId).toISOString() }`)
             }
             return false;
         }
@@ -94,17 +104,47 @@ const trader = {
     },
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
-    buildCandle: function() {
+    buildCandle: async function() {
         const nextCandle = new Date(new Date(this.currentCandle).getTime() + (this.config.timeframe * 1000 * 60));
         const fromId = this.getCandleId(this.currentCandle);
         const toId = this.getCandleId(nextCandle);
 
-        const rows = this.data.filter(e => e.id >= fromId && e.id <= toId);
-        if (!rows.length) {
-            if (this.config.verbose > 0) {
-                console.log(`Candle not available: ${ this.currentCandle.toISOString() }`)
+        const rows = this.data.filter(e => e.id >= fromId && e.id < toId);
+        if (rows.length < this.config.timeframe) {
+            if (this.config.verbose >= 1) {
+                console.log(`Candle not available in memory: ${ this.currentCandle.toISOString() }`);
             }
-            return false;
+
+            // try to find missing candles on database
+            const dbCandle = await this.queryData(this.currentCandle, nextCandle);
+            if (dbCandle.length) {
+                this.data.push(...dbCandle);
+                return await this.buildCandle();
+            }
+
+            // fetch new candles if there is some missing
+            if (!this.scanner) {
+                this.scanner = require('./scanner')(this.config);                
+            }
+            const newCandles = await this.scanner.scan(                {
+                fromTime: this.currentCandle,
+                toTime: nextCandle,
+            });
+
+            if (newCandles.length <= 1) {
+                if (this.config.verbose >= 1)
+                console.log('No new data found, waiting a minute...');
+                await new Promise(resolve => setTimeout(() => resolve(true), 1000 * 60));
+                return await this.buildCandle();
+            }
+
+            this.data.push(...newCandles.map(candle => ({
+                id: this.getCandleId(candle.tsOpen),
+                missing: 0,
+                ...candle,
+            })));
+
+            return await this.buildCandle();
         }
 
         const candle = {};

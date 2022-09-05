@@ -8,5 +8,6 @@
     "strategy": "dca",
     "verbose": 2,
     "startingBalance": 1000,
-    "swapFee": 0.002
+    "swapFee": 0.002,
+    "historySize": 720
 }

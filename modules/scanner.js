@@ -16,17 +16,21 @@ const scanner = {
         fromTime = this.getTimestampFromCandleId(missing);
         toTime = this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime();
         
-        console.log(`Querying exchange...`);
+        if (this.config.verbose >= 2) {
+            console.log(`Querying exchange...`);
+        }
         const data = await this.exchange.fetch(fromTime, toTime);
+
+        if (!data.length) return [];
 
         await this.save(data);
 
-        const toSave = new Date(data[ data.length-1 ].tsOpen).getTime();
+        const toSave = new Date(data[ data.length-1 ].tsClose).getTime();
 
-        if (data.length && toSave < toTime) {
-            await this.scan();
+        if (data.length && data.length > 1 && toSave < toTime) {
+            return await this.scan();
         }
-        return true;
+        return data;
     },
 
     getMissingCandles: async function() {
@@ -45,13 +49,16 @@ const scanner = {
         }
 
         // i=1 is the end of the first range. this should be the fromTime of the request
-        return ranges.length ? ranges[1] : fromTime;
+        return ranges.length > 1 ? ranges[1] : fromTime;
     },
 
     save: async function(data) {
         const fromStr = data[0].tsOpen.toISOString();
-        const toStr = data[ data.length-1 ].tsOpen.toISOString();
-        console.log(`Saving into database. FROM: ${ fromStr }, TO: ${ toStr }`);
+        const toStr = data[ data.length-1 ].tsClose.toISOString();
+
+        if (this.config.verbose >= 2) {
+            console.log(`Saving into database. FROM: ${ fromStr }, TO: ${ toStr }`);
+        }
 
         const sql = `INSERT INTO candles (id, open, close, low, high, volume, tsopen, tsclose, samples, missing) VALUES (:id,:open,:close,:low,:high,:volume,:tsOpen,:tsClose,:samples,:missing) ON DUPLICATE KEY UPDATE open = :open, close = :close, low = :low, high = :high, volume = :volume, tsopen = :tsOpen, tsclose = :tsClose, samples = :samples, missing = :missing;`;
         
