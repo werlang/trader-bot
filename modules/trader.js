@@ -12,7 +12,7 @@ const trader = {
 
         const strategy = require(`../strategies/${ this.config.strategy }`);
         this.strategy = strategy;
-        this.report = require('./report')(this.config, this.wallet);
+        this.report = require('../helper/report')(this.config, this.wallet);
         this.api = require('../helper/api')(this, strategy);
         
         strategy.init();
