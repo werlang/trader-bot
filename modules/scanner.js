@@ -105,8 +105,15 @@ const scanner = {
     }
 };
 
-module.exports = config => {
+module.exports = async (config, { fromTime, toTime }={}) => {
+    if (fromTime) {
+        config.fromTime = fromTime;
+    }
+    if (toTime) {
+        config.toTime = toTime;
+    }
     scanner.config = config;
     scanner.exchange = require('../exchanges/'+ config.exchange)(config);
-    return scanner;
+    console.log('Scanner module loaded');
+    return await scanner.scan();
 };

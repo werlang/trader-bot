@@ -25,9 +25,7 @@ process.argv.forEach((val, index, array) => {
 
 if (args.scanFile) {
     const scanConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.scanFile }`));
-    const scanner = require('./modules/scanner')(scanConfig);
-    console.log('Scanner module loaded');
-    scanner.scan().then(() => running = false);
+    require('./modules/scanner')(scanConfig).then(() => running = false);
 }
 else if (args.traderFile) {
     const traderConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.traderFile }`));
