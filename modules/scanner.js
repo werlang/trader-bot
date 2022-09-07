@@ -6,15 +6,15 @@ const scanner = {
 
     scan: async function({ fromTime, toTime }={}) {
         if (fromTime) {
-            this.config.fromTime = fromTime;
+            this.fromTime = fromTime;
         }
         if (toTime) {
-            this.config.toTime = toTime;
+            this.toTime = toTime;
         }
 
         const missing = await this.getMissingCandles();
         fromTime = this.getTimestampFromCandleId(missing);
-        toTime = this.config.toTime ? new Date(this.config.toTime).getTime() : new Date().getTime();
+        toTime = this.toTime ? new Date(this.toTime).getTime() : new Date().getTime();
         
         if (this.config.verbose >= 2) {
             console.log(`Querying exchange...`);
@@ -34,8 +34,8 @@ const scanner = {
     },
 
     getMissingCandles: async function() {
-        const fromTime = this.getCandleId(this.config.fromTime);
-        const toTime = this.getCandleId(this.config.toTime);
+        const fromTime = this.getCandleId(this.fromTime);
+        const toTime = this.getCandleId(this.toTime);
 
         const sql = `SELECT id, tsopen FROM candles WHERE id BETWEEN ? AND ?`;// AND id NOT BETWEEN 27349956 AND 27349965 AND id NOT BETWEEN 27570000 AND 27570150`;
         const [ rows, error ] = await db.query(sql, [ fromTime, toTime ]);
@@ -121,6 +121,8 @@ const scanner = {
 
 module.exports = config => {
     scanner.config = config;
+    scanner.fromTime = config.fromTime;
+    scanner.toTime = config.toTime;
     scanner.exchange = require('../exchanges/'+ config.exchange)(config);
     console.log('Scanner module loaded');
     return scanner;

@@ -31,6 +31,10 @@ else if (args.traderFile) {
     const traderConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.traderFile }`));
     const wsData = {};
 
+    if (args.webServer) {
+        require('./webserver')(wsData);
+    }
+    
     require('./modules/trader')({
         config: traderConfig,
         webServerData: wsData,
@@ -42,7 +46,6 @@ else if (args.traderFile) {
 
         if (args.webServer) {
             running = true;
-            require('./webserver')(wsData);
         }
     });
 }

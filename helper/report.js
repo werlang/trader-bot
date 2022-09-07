@@ -1,14 +1,7 @@
 const report = {
     info: {},
 
-    init: function(config, wallet) {
-        this.info.startingTime = new Date(config.fromTime).toISOString();
-        this.info.endingTime = new Date(config.toTime).toISOString();
-        this.info.period = (new Date(config.toTime).getTime() - new Date(config.fromTime).getTime()) / 1000 / 3600 / 24;
-
-        this.timeframe = config.timeframe;
-
-        this.info.startingBalance = config.startingBalance;
+    init: function() {
         this.info.feePaid = 0;
         this.info.swaps = [];
         this.info.wallet = [];
@@ -33,7 +26,11 @@ const report = {
 
     show: function() {
         const lastWalletInfo = this.info.wallet[ this.info.wallet.length-1 ];
+        
+        this.info.startingPrice = this.info.market[0];
         this.info.endingPrice = this.info.market[ this.info.market.length-1 ];
+        
+        this.info.startingBalance = this.info.wallet[0].currency + this.info.wallet[0].asset * this.info.startingPrice;
         this.info.endingBalance = lastWalletInfo.currency + lastWalletInfo.asset * this.info.endingPrice;
 
         const walletProfit = this.info.endingBalance / this.info.startingBalance;
@@ -41,7 +38,9 @@ const report = {
         this.info.marketProfit = (marketProfit - 1) * 100;
         this.info.walletProfit = (walletProfit - 1) * 100;
 
-        const apr = Math.pow(walletProfit, 1 / this.info.period);
+        const period = (this.info.endingTime.getTime() - this.info.startingTime.getTime()) / 1000 / 3600 / 24;
+
+        const apr = Math.pow(walletProfit, 1 / period);
         const apy = Math.pow(apr, 365);
         this.info.apr = (apr - 1) * 100;
         this.info.apy = (apy - 1) * 100;
@@ -51,7 +50,7 @@ const report = {
             const arr = Array(size).fill(0);
             for (let i in arr) {
                 let aprm = Math.pow(1.01, 1/30/24/60); // apr each minute
-                arr[i] = i == 0 ? this.info.startingBalance : arr[i-1] * Math.pow(aprm, this.timeframe);
+                arr[i] = i == 0 ? this.info.startingBalance : arr[i-1] * Math.pow(aprm, this.info.timeframe);
             }
             return arr;
         })(this.info.wallet.length);
@@ -61,9 +60,9 @@ const report = {
         this.info.drawDown = pa.maxDrawdown(balance);
 
         let msg = `\n\n\t--- TRADING SUMMARY ---\n\n`;
-        msg += `Starting time: \t\t${this.info.startingTime}\n`;
-        msg += `Ending time: \t\t${this.info.endingTime}\n`;
-        msg += `Period: \t\t${this.info.period} days\n\n`;
+        msg += `Starting time: \t\t${this.info.startingTime.toISOString()}\n`;
+        msg += `Ending time: \t\t${this.info.endingTime.toISOString()}\n`;
+        msg += `Period: \t\t${ parseInt(period) } days\n\n`;
 
         msg += `Starting price: \t$${this.info.startingPrice.toFixed(2)}\n`;
         msg += `Ending price: \t\t$${this.info.endingPrice.toFixed(2)}\n`;
@@ -84,11 +83,16 @@ const report = {
     },
 
     serveWeb: function(data) {
-        Object.entries(this.info).forEach(([k,v]) => data[k] = v);
+        // copy reference to old object
+        const oldObj = this.info;
+        // update info with reference to object received
+        this.info = data;
+        // copy old DATA to new object reference
+        Object.entries(oldObj).forEach(([k,v]) => data[k] = v);
     }
 }
 
-module.exports = (config, wallet) => {
-    report.init(config, wallet);
+module.exports = () => {
+    report.init();
     return report;
 }
