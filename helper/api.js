@@ -1,3 +1,5 @@
+const config = require('./config');
+
 const api = {
     // swap value * currency for asset
     swap: async function(amount, currency=true) {
@@ -66,8 +68,8 @@ module.exports = (trader, strategy) => {
     api.strategy = strategy;
 
     api.wallet = trader.wallet;
-    api.verbose = trader.config.verbose;
-    api.swapFee = trader.config.swapFee;
+    api.verbose = config().verbose;
+    api.swapFee = config().swapFee;
     api.traderReport = trader.report;
 
     return api;

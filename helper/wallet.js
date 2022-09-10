@@ -1,3 +1,5 @@
+const config = require('./config');
+
 const wallet = {
     balance: {
         currency: 0,
@@ -24,9 +26,8 @@ const wallet = {
     },
 }
 
-module.exports = async (mode, config) => {
+module.exports = async (mode) => {
     wallet.mode = mode;
-    wallet.config = config;
-    wallet.balance.currency = config.startingBalance || 100;
+    wallet.balance.currency = config().startingBalance || 100;
     return wallet;
 }

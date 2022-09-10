@@ -1,4 +1,5 @@
 const db = require('../helper/database')();
+const config = require('../helper/config');
 
 const scanner = {
     candles: {},
@@ -16,7 +17,7 @@ const scanner = {
         fromTime = this.getTimestampFromCandleId(missing);
         toTime = this.toTime ? new Date(this.toTime).getTime() : new Date().getTime();
         
-        if (this.config.verbose >= 2) {
+        if (config().verbose >= 2) {
             console.log(`Querying exchange...`);
         }
         const data = await this.exchange.fetch(fromTime, toTime);
@@ -56,7 +57,7 @@ const scanner = {
         const fromStr = data[0].tsOpen.toISOString();
         const toStr = data[ data.length-1 ].tsClose.toISOString();
 
-        if (this.config.verbose >= 2) {
+        if (config().verbose >= 2) {
             console.log(`Saving into database. FROM: ${ fromStr }, TO: ${ toStr }`);
         }
 
@@ -119,11 +120,10 @@ const scanner = {
     }
 };
 
-module.exports = config => {
-    scanner.config = config;
-    scanner.fromTime = config.fromTime;
-    scanner.toTime = config.toTime;
-    scanner.exchange = require('../exchanges/'+ config.exchange)(config);
+module.exports = () => {
+    scanner.fromTime = config().fromTime;
+    scanner.toTime = config().toTime;
+    scanner.exchange = require('../exchanges/'+ config().exchange)();
     console.log('Scanner module loaded');
     return scanner;
 };

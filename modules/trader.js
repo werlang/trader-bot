@@ -1,17 +1,18 @@
 const db = require('../helper/database')();
+const config = require('../helper/config');
 
 const trader = {
     trade: async function() {
-        this.currentCandle = new Date(this.config.fromTime);
+        this.currentCandle = new Date(config().fromTime);
         
-        this.wallet = await require('../helper/wallet')(this.mode, this.config);
-        const strategy = require(`../strategies/${ this.config.strategy }`);
+        this.wallet = await require('../helper/wallet')(this.mode);
+        const strategy = require(`../strategies/${ config().strategy }`);
         this.strategy = strategy;
         this.report = require('../helper/report')();
         this.api = require('../helper/api')(this, strategy);
 
         this.report.serveWeb(this.wsData);
-        this.report.set('timeframe', this.config.timeframe);
+        this.report.set('timeframe', config().timeframe);
 
         await strategy.init();
         strategy.started = true;
@@ -19,7 +20,7 @@ const trader = {
         this.data = [];
 
         if (this.mode == 'backtest') {
-            await this.queryData(this.config.fromTime, this.config.toTime);
+            await this.queryData(config().fromTime, config().toTime);
             if (!this.data.length) {
                 this.running = false;
                 return false;
@@ -32,7 +33,7 @@ const trader = {
         }
         else if (this.mode == 'paper') {
             // fetch data for building history window
-            const fromTime = new Date().getTime() - this.config.historySize * 1000 * 60 * this.config.timeframe;
+            const fromTime = new Date().getTime() - config().historySize * 1000 * 60 * config().timeframe;
             await this.queryData(fromTime, new Date());
             if (!this.data.length) {
                 this.running = false;
@@ -75,20 +76,20 @@ const trader = {
         const fromId = this.getCandleId(fromTime);
         const toId = this.getCandleId(toTime);
         
-        if (this.config.verbose >= 2) {
+        if (config().verbose >= 2) {
             console.log('Querying database.');
         }
         const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
 
         if (!rows.length || fromId != rows[0].id || toId != rows[rows.length-1].id + 1) {
-            if (this.config.verbose >= 1) {
+            if (config().verbose >= 1) {
                 console.log(`Some candles were not found on database`);
             }
             
             // fetch new candles if there is some missing
             if (!this.scanner) {
-                this.scanner = require('./scanner')(this.config);                
+                this.scanner = require('./scanner')();                
             }
             const newCandles = await this.scanner.scan(                {
                 fromTime: fromTime,
@@ -96,7 +97,7 @@ const trader = {
             });
 
             if (newCandles.length <= 1) {
-                if (this.config.verbose >= 1) {
+                if (config().verbose >= 1) {
                     console.log('No new data found, waiting a minute...');
                 }
                 await new Promise(resolve => setTimeout(() => resolve(true), 1000 * 60));
@@ -112,19 +113,19 @@ const trader = {
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
     buildCandle: async function() {
-        const nextCandle = new Date(new Date(this.currentCandle).getTime() + (this.config.timeframe * 1000 * 60));
+        const nextCandle = new Date(new Date(this.currentCandle).getTime() + (config().timeframe * 1000 * 60));
         const fromId = this.getCandleId(this.currentCandle);
         const toId = this.getCandleId(nextCandle);
 
         const rows = this.data.filter(e => e.id >= fromId && e.id < toId);
-        if (this.mode == 'backtest' && !rows.length && toId >= this.getCandleId(this.config.toTime)) {
-            if (this.config.verbose > 0) {
+        if (this.mode == 'backtest' && !rows.length && toId >= this.getCandleId(config().toTime)) {
+            if (config().verbose > 0) {
                 console.log(`Finish backtest!`);
             }
             return false;
         }
-        if (rows.length < this.config.timeframe) {
-            if (this.config.verbose >= 1) {
+        if (rows.length < config().timeframe) {
+            if (config().verbose >= 1) {
                 console.log(`Candle not available in memory: ${ this.currentCandle.toISOString() }`);
             }
 
@@ -159,8 +160,7 @@ const trader = {
     },
 };
 
-module.exports = async ({ config, webServerData, mode }) => {
-    trader.config = config;
+module.exports = async ({ webServerData, mode }) => {
     trader.wsData = webServerData;
     trader.mode = mode;
     

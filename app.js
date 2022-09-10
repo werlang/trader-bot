@@ -1,4 +1,4 @@
-const fs = require('fs');
+const config = require('./helper/config');
 
 const args = {};
 
@@ -24,19 +24,18 @@ process.argv.forEach((val, index, array) => {
 });
 
 if (args.scanFile) {
-    const scanConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.scanFile }`));
-    require('./modules/scanner')(scanConfig).scan().then(() => running = false);
+    config(args.scanFile);
+    require('./modules/scanner')().scan().then(() => running = false);
 }
 else if (args.traderFile) {
-    const traderConfig = JSON.parse(fs.readFileSync(`${__dirname}/${ args.traderFile }`));
+    config(args.traderFile);
     const wsData = {};
 
     if (args.webServer) {
         require('./webserver')(wsData);
     }
-    
+
     require('./modules/trader')({
-        config: traderConfig,
         webServerData: wsData,
         mode: args.mode || 'live',
     })
