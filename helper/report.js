@@ -1,3 +1,5 @@
+const pa = require('portfolio-analytics');
+
 const report = {
     info: {},
 
@@ -45,7 +47,6 @@ const report = {
         this.info.apr = (apr - 1) * 100;
         this.info.apy = (apy - 1) * 100;
 
-        const pa = require('portfolio-analytics');
         const riskFreeArray = (size => {
             const arr = Array(size).fill(0);
             for (let i in arr) {

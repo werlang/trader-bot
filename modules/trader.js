@@ -1,21 +1,23 @@
 const db = require('../helper/database')();
 const config = require('../helper/config');
+const wallet = require('../helper/wallet');
+const report = require('../helper/report');
+const api = require('../helper/api');
 
 const trader = {
     trade: async function() {
         this.currentCandle = new Date(config().fromTime);
         
-        this.wallet = await require('../helper/wallet')(this.mode);
-        const strategy = require(`../strategies/${ config().strategy }`);
-        this.strategy = strategy;
-        this.report = require('../helper/report')();
-        this.api = require('../helper/api')(this, strategy);
+        this.wallet = await wallet(this.mode);
+        this.strategy = require(`../strategies/${ config().strategy }`);
+        this.report = report();
+        this.api = api(this, this.strategy);
 
         this.report.serveWeb(this.wsData);
         this.report.set('timeframe', config().timeframe);
 
-        await strategy.init();
-        strategy.started = true;
+        await this.strategy.init();
+        this.strategy.started = true;
 
         this.data = [];
 
