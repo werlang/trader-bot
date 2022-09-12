@@ -3,6 +3,10 @@ const config = require('../helper/config');
 const scanner = require('../modules/scanner');
 
 const candleBuilder = {
+    init: function(trader) {
+        this.trader = trader;
+    },
+
     queryData: async function(fromTime, toTime) {
         const fromId = this.getCandleId(fromTime);
         const toId = this.getCandleId(toTime);
@@ -38,31 +42,31 @@ const candleBuilder = {
             return await this.queryData(fromTime, toTime);
         }
 
+        rows.forEach(row => this.trader.data.push(row));
         return rows;
     },
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
-    buildCandle: async function(data, currentCandle, mode) {
-        const nextCandle = new Date(new Date(currentCandle).getTime() + (config().timeframe * 1000 * 60));
-        const fromId = this.getCandleId(currentCandle);
+    buildCandle: async function() {
+        const nextCandle = new Date(new Date(this.trader.currentCandle).getTime() + (config().timeframe * 1000 * 60));
+        const fromId = this.getCandleId(this.trader.currentCandle);
         const toId = this.getCandleId(nextCandle);
 
-        const rows = data.filter(e => e.id >= fromId && e.id < toId);
-        if (mode == 'backtest' && !rows.length && toId >= this.getCandleId(config().toTime)) {
+        const rows = this.trader.data.filter(e => e.id >= fromId && e.id < toId);
+        if (this.trader.mode == 'backtest' && !rows.length && toId >= this.getCandleId(config().toTime)) {
             if (config().verbose > 0) {
                 console.log(`Finish backtest!`);
             }
-            return [ false, currentCandle ];
+            return false;
         }
         if (rows.length < config().timeframe) {
             if (config().verbose >= 1) {
-                console.log(`Candle not available in memory: ${ currentCandle.toISOString() }`);
+                console.log(`Candle not available in memory: ${ this.trader.currentCandle.toISOString() }`);
             }
 
             // try to find missing candles on database
-            const newData = await this.queryData(currentCandle, nextCandle);
-            newData.forEach(e => data.push(e));
-            return await this.buildCandle(data, currentCandle, mode);
+            await this.queryData(this.trader.currentCandle, nextCandle);
+            return await this.buildCandle();
         }
 
         const candle = {};
@@ -77,7 +81,8 @@ const candleBuilder = {
             candle.samples = parseInt(row.samples) + (candle.samples || 0);
         });
 
-        return [ candle, nextCandle ];
+        this.trader.currentCandle = nextCandle;
+        return candle;
     },
 
     getCandleId: function(time) {

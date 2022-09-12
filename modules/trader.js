@@ -20,10 +20,10 @@ const trader = {
         this.strategy.started = true;
 
         this.data = [];
+        candleBuilder.init(this);
 
         if (this.mode == 'backtest') {
-            const data = await candleBuilder.queryData(config().fromTime, config().toTime);
-            data.forEach(row => this.data.push(row));
+            await candleBuilder.queryData(config().fromTime, config().toTime);
             if (!this.data.length) {
                 this.running = false;
                 return false;
@@ -37,8 +37,7 @@ const trader = {
         else if (this.mode == 'paper') {
             // fetch data for building history window
             const fromTime = new Date().getTime() - config().historySize * 1000 * 60 * config().timeframe;
-            const data = await candleBuilder.queryData(fromTime, new Date());
-            data.forEach(row => this.data.push(row));
+            await candleBuilder.queryData(fromTime, new Date());
             if (!this.data.length) {
                 this.running = false;
                 return false;
@@ -63,8 +62,7 @@ const trader = {
     },
 
     step: async function() {
-        let candle;
-        [ candle, this.currentCandle ] = await candleBuilder.buildCandle(this.data, this.currentCandle, this.mode);
+        const candle = await candleBuilder.buildCandle();
         if (!candle) {
             this.running = false;
             return false;
