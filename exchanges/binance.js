@@ -8,7 +8,7 @@ const exchange = {
     // receive timestamp and fetch data from exchange
     fetch: async function(fromTime, toTime) {
         const query = {
-            symbol: config().symbol,
+            symbol: config().exchange.symbol,
             interval: '1m',
             startTime: fromTime,
             endTime: toTime,
@@ -17,7 +17,7 @@ const exchange = {
 
         const url = `${ this.url }/${ this.endpoint }?${ new URLSearchParams(query).toString() }`;
         const req = await fetch(url, {
-            headers: { "X-MBX-APIKEY": config().apiKey }
+            headers: { "X-MBX-APIKEY": config().exchange.apiKey }
         });
         const data = await req.json();
         // console.log(data)
