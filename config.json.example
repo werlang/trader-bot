@@ -9,7 +9,8 @@
     "dex": {
         "name": "paraswap",
         "asset": "ETH",
-        "currency": "USDT"
+        "currency": "USDT",
+        "wallet": "YOUR_WALLET"
     },
     "timeframe": 60,
     "strategy": "dca",

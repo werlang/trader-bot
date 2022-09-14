@@ -4,8 +4,27 @@ const config = require('../helper/config');
 const dex = {
     url: 'https://apiv5.paraswap.io',
 
-    swap: async function() {
-        return await this.getTx();
+    swap: async function(amount, currency=true) {
+        if (!this.currency || !this.asset) {
+            if (!await this.getTokens()) return false;
+        }
+
+        const obj = {
+            side: 'SELL',
+            network: this.network,
+        };
+        if (currency) {
+            obj.srcToken = this.currency.address;
+            obj.destToken = this.asset.address;
+            obj.amount = amount * Math.pow(10, this.currency.decimals);
+        }
+        else {
+            obj.srcToken = this.asset.address;
+            obj.destToken = this.currency.address;
+            obj.amount = amount * Math.pow(10, this.asset.decimals);
+        }
+
+        return await this.getTx(obj);
     },
     
     getTokens: async function() {
@@ -19,45 +38,42 @@ const dex = {
         return true;
     },
 
-    getPrice: async function() {
+    getPrice: async function(obj) {
         const endpoint = 'prices';
-        const query = new URLSearchParams({
-            // srcToken: ,
-            // destToken: ,
-            // amount: ,
-            // side: ,
-            // network: this.network,
-        }).toString();
+        const query = new URLSearchParams(obj).toString();
         const req = await fetch(`${ this.url }/${ endpoint }?${ query }`);
         const data = await req.json();
-        if (data.priceRoute) {
-            return data.priceRoute;
+        if (!data.priceRoute) {
+            console.log(data);
+            return false;
         }
-        return false;
+        return data.priceRoute;
     },
 
-    getTx: async function() {
-        const priceRoute = await this.getPrice();
+    getTx: async function(obj) {
+        const priceRoute = await this.getPrice(obj);
         if (!priceRoute) return false;
-
+        // console.log(priceRoute);
+        
         const endpoint = 'transactions';
         const query = new URLSearchParams({
-            // srcToken: ,
-            // destToken: ,
-            // userAddress: ,
-            // srcAmount: ,
-            // destAmount: ,
+            srcToken: priceRoute.srcToken,
+            destToken: priceRoute.destToken,
+            userAddress: config().dex.wallet,
+            srcAmount: priceRoute.srcAmount,
+            destAmount: priceRoute.destAmount,
         }).toString();
         const req = await fetch(`${ this.url }/${ endpoint }/${ this.network }?${ query }`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application-json' },
-            body: JSON.stringify(priceRoute),
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ priceRoute: priceRoute }),
         });
         const data = await req.json();
-        if (data.from && data.to) {
-            return data;
+        if (data.error) {
+            console.log(data);
+            return false;
         }
-        return false;
+        return data;
     },
 }
 

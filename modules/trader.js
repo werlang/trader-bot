@@ -31,7 +31,9 @@ const trader = {
             this.report.set('startingTime', this.data[0].tsopen);
         }
         else if (this.mode == 'live') {
-            console.log('Live trading not implemented yet');
+            this.dex = require('../dex/'+ config().dex.name)(1);
+            console.log(await this.dex.swap(0.01, false));
+
             return false;
         }
         else if (this.mode == 'paper') {
