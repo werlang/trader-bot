@@ -13,6 +13,7 @@
     "express": "^4.18.1",
     "mysql2": "^2.3.3",
     "node-fetch": "^2.6.7",
-    "portfolio-analytics": "^0.0.4"
+    "portfolio-analytics": "^0.0.4",
+    "web3": "^1.8.0"
   }
 }
