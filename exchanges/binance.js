@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const config = require('../helper/config');
+const config = require('../config.json');
 
 const exchange = {
     url: 'https://api.binance.com/api/v3',
@@ -8,7 +8,7 @@ const exchange = {
     // receive timestamp and fetch data from exchange
     fetch: async function(fromTime, toTime) {
         const query = {
-            symbol: config().exchange.symbol,
+            symbol: config.exchange.symbol,
             interval: '1m',
             startTime: fromTime,
             endTime: toTime,
@@ -17,7 +17,7 @@ const exchange = {
 
         const url = `${ this.url }/${ this.endpoint }?${ new URLSearchParams(query).toString() }`;
         const req = await fetch(url, {
-            headers: { "X-MBX-APIKEY": config().exchange.apiKey }
+            headers: { "X-MBX-APIKEY": config.exchange.apiKey }
         });
         const data = await req.json();
         // console.log(data)

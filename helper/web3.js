@@ -1,5 +1,5 @@
 const Web3 = require('web3');
-const config = require('./config');
+const config = require('../config.json');
 const contractABI = require('./ERC20ABI.json');
 
 // Network ID. (Mainnet - 1, Ropsten - 3, Polygon - 137, BSC - 56, Avalanche - 43114)
@@ -54,7 +54,7 @@ const web3 = {
             return this.getETHBalance(wallet);
         }
 
-        const senderAddress = config().dex.wallet;
+        const senderAddress = config.dex.wallet;
         const tokenContract = new this.web3.eth.Contract(contractABI, token);
 
         const [err, res] = await new Promise(resolve => tokenContract.methods.balanceOf(senderAddress).call((err, res) => resolve([err, res])));

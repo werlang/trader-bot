@@ -1,5 +1,5 @@
 const db = require('../helper/database')();
-const config = require('../helper/config');
+const config = require('../config.json');
 const scanner = require('../modules/scanner');
 
 const candleBuilder = {
@@ -11,14 +11,14 @@ const candleBuilder = {
         const fromId = this.getCandleId(fromTime);
         const toId = this.getCandleId(toTime);
         
-        if (config().verbose >= 2) {
+        if (config.verbose >= 2) {
             console.log('Querying database.');
         }
         const sql = `SELECT * FROM candles WHERE id BETWEEN ? AND ? - 1`;
         const [ rows, error ] = await db.query(sql, [ fromId, toId ]);
 
         if (!rows.length || fromId != rows[0].id || toId != rows[rows.length-1].id + 1) {
-            if (config().verbose >= 1) {
+            if (config.verbose >= 1) {
                 console.log(`Some candles were not found on database`);
             }
             
@@ -32,7 +32,7 @@ const candleBuilder = {
             });
 
             if (newCandles.length <= 1) {
-                if (config().verbose >= 1) {
+                if (config.verbose >= 1) {
                     console.log('No new data found, waiting a minute...');
                 }
                 await new Promise(resolve => setTimeout(() => resolve(true), 1000 * 60));
@@ -48,19 +48,19 @@ const candleBuilder = {
 
     // get all 1m candle between currentCandle and currentCandle + timeframe. Aggregate into 1 candle and returns it. 
     buildCandle: async function() {
-        const nextCandle = new Date(new Date(this.trader.currentCandle).getTime() + (config().timeframe * 1000 * 60));
+        const nextCandle = new Date(new Date(this.trader.currentCandle).getTime() + (config.timeframe * 1000 * 60));
         const fromId = this.getCandleId(this.trader.currentCandle);
         const toId = this.getCandleId(nextCandle);
 
         const rows = this.trader.data.filter(e => e.id >= fromId && e.id < toId);
-        if (this.trader.mode == 'backtest' && !rows.length && toId >= this.getCandleId(config().toTime)) {
-            if (config().verbose > 0) {
+        if (this.trader.mode == 'backtest' && !rows.length && toId >= this.getCandleId(config.toTime)) {
+            if (config.verbose > 0) {
                 console.log(`Finish backtest!`);
             }
             return false;
         }
-        if (rows.length < config().timeframe) {
-            if (config().verbose >= 1) {
+        if (rows.length < config.timeframe) {
+            if (config.verbose >= 1) {
                 console.log(`Candle not available in memory: ${ this.trader.currentCandle.toISOString() }`);
             }
 

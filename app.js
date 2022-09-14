@@ -1,34 +1,29 @@
-const config = require('./helper/config');
-
 const args = {};
 
 let running = true;
 
 // receive args
 process.argv.forEach((val, index, array) => {
-    if ((val == '-s' || val == '--scan') && array[index+1]){
-        args.scanFile = array[index+1];
-    }
-    if ((val == '-t' || val == '--trader') && array[index+1]){
-        args.traderFile = array[index+1];
+    if ((val == '-s' || val == '--scan')){
+        args.mode = 'scanner';
     }
     if ((val == '-w' || val == '--web')){
         args.webServer = true;
     }
     if ((val == '-b' || val == '--backtest')){
         args.mode = 'backtest';
+        args.trader = true;
     }
     if ((val == '-p' || val == '--paper')){
         args.mode = 'paper';
+        args.trader = true;
     }
 });
 
-if (args.scanFile) {
-    config(args.scanFile);
+if (args.mode == 'scanner') {
     require('./modules/scanner')().scan().then(() => running = false);
 }
-else if (args.traderFile) {
-    config(args.traderFile);
+else if (args.trader) {
     const wsData = {};
 
     if (args.webServer) {

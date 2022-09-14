@@ -1,13 +1,22 @@
 const fetch = require('node-fetch');
-const config = require('../helper/config');
+const config = require('../config.json');
+const web3 = require('../helper/web3');
 
 const dex = {
     url: 'https://apiv5.paraswap.io',
 
+    init: async function() {
+        await this.getTokens();
+        web3.init(this.network);
+    },
+
     swap: async function(amount, currency=true) {
+        
         if (!this.currency || !this.asset) {
-            if (!await this.getTokens()) return false;
+            await this.init();
         }
+
+        return web3.getTokenBalance(config.dex.wallet, this.asset.address);
 
         const obj = {
             side: 'SELL',
@@ -31,8 +40,8 @@ const dex = {
         const endpoint = 'tokens';
         const req = await fetch(`${ this.url }/${ endpoint }/${ this.network }`);
         const data = await req.json();
-        this.asset = data.tokens.find(token => token.symbol == config().dex.asset);
-        this.currency = data.tokens.find(token => token.symbol == config().dex.currency);
+        this.asset = data.tokens.find(token => token.symbol == config.dex.asset);
+        this.currency = data.tokens.find(token => token.symbol == config.dex.currency);
         
         if (!this.asset || !this.currency) return false;
         return true;
@@ -59,7 +68,7 @@ const dex = {
         const query = new URLSearchParams({
             srcToken: priceRoute.srcToken,
             destToken: priceRoute.destToken,
-            userAddress: config().dex.wallet,
+            userAddress: config.dex.wallet,
             srcAmount: priceRoute.srcAmount,
             destAmount: priceRoute.destAmount,
         }).toString();

@@ -1,4 +1,4 @@
-const config = require('./config');
+const config = require('../config.json');
 
 const api = {
     // swap value * currency for asset
@@ -7,20 +7,20 @@ const api = {
         const wallet = await api.wallet.get();
 
         if (currency && wallet.currency < amount) {
-            if (config().verbose > 0) {
+            if (config.verbose > 0) {
                 console.log('Not enough currency balance to perform trader swap.');
             }
             return false;
         }
 
         if (!currency && wallet.asset < amount) {
-            if (config().verbose > 0) {
+            if (config.verbose > 0) {
                 console.log('Not enough asset balance to perform this swap.');
             }
             return false;
         }
 
-        const swapFee = amount * config().swapFee;
+        const swapFee = amount * config.swapFee;
 
         if (currency) {
             await api.wallet.currency.add(-amount);
@@ -40,7 +40,7 @@ const api = {
             currency: currency,
         });
 
-        if (config().verbose > 1) {
+        if (config.verbose > 1) {
             const wallet = await api.wallet.get();
             let msg = api.candle.tsclose.toISOString() + '\t';
             msg += `SWAPPED: ${ amount.toFixed(8) } ${ currency ? 'C' : 'A' } @ ${ price }\t`;

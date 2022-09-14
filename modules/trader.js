@@ -1,4 +1,4 @@
-const config = require('../helper/config');
+const config = require('../config.json');
 const wallet = require('../helper/wallet');
 const report = require('../helper/report');
 const api = require('../helper/api');
@@ -6,15 +6,15 @@ const candleBuilder = require('../helper/candleBuilder');
 
 const trader = {
     trade: async function() {
-        this.currentCandle = new Date(config().fromTime);
+        this.currentCandle = new Date(config.fromTime);
         
         this.wallet = await wallet(this.mode);
-        this.strategy = require(`../strategies/${ config().strategy }`);
+        this.strategy = require(`../strategies/${ config.strategy }`);
         this.report = report();
         this.api = api(this, this.strategy);
 
         this.report.serveWeb(this.wsData);
-        this.report.set('timeframe', config().timeframe);
+        this.report.set('timeframe', config.timeframe);
 
         await this.strategy.init();
         this.strategy.started = true;
@@ -23,7 +23,7 @@ const trader = {
         candleBuilder.init(this);
 
         if (this.mode == 'backtest') {
-            await candleBuilder.queryData(config().fromTime, config().toTime);
+            await candleBuilder.queryData(config.fromTime, config.toTime);
             if (!this.data.length) {
                 this.running = false;
                 return false;
@@ -31,14 +31,14 @@ const trader = {
             this.report.set('startingTime', this.data[0].tsopen);
         }
         else if (this.mode == 'live') {
-            this.dex = require('../dex/'+ config().dex.name)(1);
+            this.dex = require('../dex/'+ config.dex.name)(1);
             console.log(await this.dex.swap(0.01, false));
 
             return false;
         }
         else if (this.mode == 'paper') {
             // fetch data for building history window
-            const fromTime = new Date().getTime() - config().historySize * 1000 * 60 * config().timeframe;
+            const fromTime = new Date().getTime() - config.historySize * 1000 * 60 * config.timeframe;
             await candleBuilder.queryData(fromTime, new Date());
             if (!this.data.length) {
                 this.running = false;
