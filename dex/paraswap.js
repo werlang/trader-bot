@@ -6,8 +6,13 @@ const dex = {
     url: 'https://apiv5.paraswap.io',
 
     init: async function() {
+        if (this.started) return this;
+
+        this.network = web3.getNetworkId();
         await this.getTokens();
         web3.init(this.network);
+        this.started = true;
+        return this;
     },
 
     swap: async function(amount, currency=true) {
@@ -15,8 +20,6 @@ const dex = {
         if (!this.currency || !this.asset) {
             await this.init();
         }
-
-        return web3.getTokenBalance(config.dex.wallet, this.asset.address);
 
         const obj = {
             side: 'SELL',
@@ -86,8 +89,4 @@ const dex = {
     },
 }
 
-module.exports = (network) => {
-    // Network ID. (Mainnet - 1, Ropsten - 3, Polygon - 137, BSC - 56, Avalanche - 43114)
-    dex.network = network;
-    return dex;
-};
+module.exports = dex;

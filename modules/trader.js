@@ -1,5 +1,4 @@
 const config = require('../config.json');
-const wallet = require('../helper/wallet');
 const report = require('../view/report');
 const api = require('./api');
 const candleBuilder = require('./candleBuilder');
@@ -8,10 +7,9 @@ const trader = {
     trade: async function() {
         this.currentCandle = new Date(config.fromTime);
         
-        this.wallet = await wallet(this.mode);
         this.strategy = require(`../strategies/${ config.strategy }`);
         this.report = report();
-        this.api = api(this, this.strategy);
+        this.api = await api(this, this.strategy);
 
         this.report.serveWeb(this.wsData);
         this.report.set('timeframe', config.timeframe);
@@ -31,9 +29,6 @@ const trader = {
             this.report.set('startingTime', this.data[0].tsopen);
         }
         else if (this.mode == 'live') {
-            this.dex = require('../dex/'+ config.dex.name)(1);
-            console.log(await this.dex.swap(0.01, false));
-
             return false;
         }
         else if (this.mode == 'paper') {

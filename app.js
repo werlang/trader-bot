@@ -3,11 +3,14 @@ const webServer = require('./webserver');
 const trader = require('./modules/trader');
 
 const args = {};
+const wsData = {};
 
 let running = true;
 
 // receive args
 process.argv.forEach((val, index, array) => {
+    args.mode = 'live';
+
     if ((val == '-s' || val == '--scan')){
         args.mode = 'scanner';
     }
@@ -16,24 +19,16 @@ process.argv.forEach((val, index, array) => {
     }
     if ((val == '-b' || val == '--backtest')){
         args.mode = 'backtest';
-        args.trader = true;
     }
     if ((val == '-p' || val == '--paper')){
         args.mode = 'paper';
-        args.trader = true;
     }
 });
 
 if (args.mode == 'scanner') {
     scanner().scan().then(() => running = false);
 }
-else if (args.trader) {
-    const wsData = {};
-
-    if (args.webServer) {
-        webServer(wsData);
-    }
-
+else {
     trader({
         webServerData: wsData,
         mode: args.mode || 'live',
@@ -46,6 +41,10 @@ else if (args.trader) {
             running = true;
         }
     });
+}
+
+if (args.webServer) {
+    webServer(wsData);
 }
 
 // keep the node app running

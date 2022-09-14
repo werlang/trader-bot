@@ -62,6 +62,18 @@ const web3 = {
         ;
     },
 
+    toEth: function(value, decimals) {
+        return parseInt(value) / Math.pow(10, decimals);
+    },
+
+    fromEth: function(value, decimals) {
+        return parseInt(value) * Math.pow(10, decimals);
+    },
+
+    getNetworkId: function() {
+        return networks[config.dex.network].id;
+    },
+
     // will get deleted after implementation done
     foo: async function() {
         // This sample code send 1 BUSD from your address to Owlracle's address on the BNB chain.

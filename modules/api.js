@@ -1,4 +1,5 @@
 const config = require('../config.json');
+const wallet = require('../helper/wallet');
 
 const api = {
     // swap value * currency for asset
@@ -73,14 +74,14 @@ const api = {
     }
 }
 
-module.exports = (trader, strategy) => {
+module.exports = async (trader, strategy) => {
     strategy.getWallet = api.getWallet;
     strategy.getWalletBalance = api.getWalletBalance;
     strategy.swap = api.swap;
     strategy.getHistory = api.getHistory;
     api.strategy = strategy;
 
-    api.wallet = trader.wallet;
+    api.wallet = await wallet(trader.mode);
     api.traderReport = trader.report;
     api.history = trader.data;
 
