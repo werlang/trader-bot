@@ -1,8 +1,8 @@
 const config = require('../config.json');
 const wallet = require('../helper/wallet');
-const report = require('../helper/report');
-const api = require('../helper/api');
-const candleBuilder = require('../helper/candleBuilder');
+const report = require('../view/report');
+const api = require('./api');
+const candleBuilder = require('./candleBuilder');
 
 const trader = {
     trade: async function() {

@@ -1,6 +1,6 @@
 const db = require('../helper/database')();
 const config = require('../config.json');
-const scanner = require('../modules/scanner');
+const scanner = require('./scanner');
 
 const candleBuilder = {
     init: function(trader) {

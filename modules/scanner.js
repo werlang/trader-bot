@@ -123,7 +123,7 @@ const scanner = {
 module.exports = () => {
     scanner.fromTime = config.fromTime;
     scanner.toTime = config.toTime;
-    scanner.exchange = require('../exchanges/'+ config.exchange.name)();
+    scanner.exchange = require('../exchange/'+ config.exchange.name)();
     console.log('Scanner module loaded');
     return scanner;
 };

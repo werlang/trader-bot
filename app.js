@@ -1,3 +1,7 @@
+const scanner = require('./modules/scanner');
+const webServer = require('./webserver');
+const trader = require('./modules/trader');
+
 const args = {};
 
 let running = true;
@@ -21,16 +25,16 @@ process.argv.forEach((val, index, array) => {
 });
 
 if (args.mode == 'scanner') {
-    require('./modules/scanner')().scan().then(() => running = false);
+    scanner().scan().then(() => running = false);
 }
 else if (args.trader) {
     const wsData = {};
 
     if (args.webServer) {
-        require('./webserver')(wsData);
+        webServer(wsData);
     }
 
-    require('./modules/trader')({
+    trader({
         webServerData: wsData,
         mode: args.mode || 'live',
     })

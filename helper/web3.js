@@ -1,6 +1,6 @@
 const Web3 = require('web3');
 const config = require('../config.json');
-const contractABI = require('./ERC20ABI.json');
+const contractABI = require('../asset/ERC20ABI.json');
 
 // Network ID. (Mainnet - 1, Ropsten - 3, Polygon - 137, BSC - 56, Avalanche - 43114)
 const networks = {
