@@ -2,15 +2,15 @@ const scanner = require('./modules/scanner');
 const webServer = require('./webserver');
 const trader = require('./modules/trader');
 
-const args = {};
+const args = {
+    mode: 'live',
+};
 const wsData = {};
 
 let running = true;
 
 // receive args
 process.argv.forEach((val, index, array) => {
-    args.mode = 'live';
-
     if ((val == '-s' || val == '--scan')){
         args.mode = 'scanner';
     }

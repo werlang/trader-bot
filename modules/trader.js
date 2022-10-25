@@ -21,6 +21,7 @@ const trader = {
         candleBuilder.init(this);
 
         if (this.mode == 'backtest') {
+            console.log('Running Backtest...');
             await candleBuilder.queryData(config.fromTime, config.toTime);
             if (!this.data.length) {
                 this.running = false;
@@ -28,11 +29,9 @@ const trader = {
             }
             this.report.set('startingTime', this.data[0].tsopen);
         }
-        else if (this.mode == 'live') {
-            return false;
-        }
-        else if (this.mode == 'paper') {
+        else if (this.mode == 'paper' || this.mode == 'live') {
             // fetch data for building history window
+            console.log('Getting data for history window.');
             const fromTime = new Date().getTime() - config.historySize * 1000 * 60 * config.timeframe;
             await candleBuilder.queryData(fromTime, new Date());
             if (!this.data.length) {
@@ -41,6 +40,7 @@ const trader = {
             }
             this.currentCandle = new Date(this.data[ this.data.length-1 ].tsclose);
             this.report.set('startingTime', this.data[ this.data.length-1 ].tsclose);
+            console.log('Running paper trader...');
         }
         else {
             console.log('This mode is not recognized');
