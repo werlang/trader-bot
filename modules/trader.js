@@ -9,15 +9,13 @@ const trader = {
         
         this.strategy = require(`../strategies/${ config.strategy }`);
         this.report = report();
+
+        this.data = [];
         this.api = await api(this, this.strategy);
 
         this.report.serveWeb(this.wsData);
         this.report.set('timeframe', config.timeframe);
 
-        await this.strategy.init();
-        this.strategy.started = true;
-
-        this.data = [];
         candleBuilder.init(this);
 
         if (this.mode == 'backtest') {
@@ -47,6 +45,9 @@ const trader = {
             return false;
         }
 
+        await this.strategy.init();
+        this.strategy.started = true;
+
         this.running = true;
         while(this.running) {
             await this.step();
@@ -66,6 +67,7 @@ const trader = {
         };
 
         this.api.candle = candle;
+        this.api.history.push(candle);
         await this.strategy.update(candle);
         this.report.append('market', candle.close );
         this.report.append('wallet', { ...(await this.api.getWallet()) } );

@@ -61,17 +61,44 @@ const api = {
         return wallet.currency + wallet.asset * api.candle.close;
     },
 
-    getHistory: function(fromTime, toTime) {
-        if (!fromTime) return [];
-        if (!toTime) {
-            toTime = api.candle.tsclose;
+    // get candle history. All candles since trading started are available.
+    // 0 || 'start' = first candle          'now' = last available candle
+    // 0,1,2,3...n = nth candle             -1,-2,-3,-4...-n = nth candle starting from end
+    getHistory: function(fromTime='start', toTime='now') {
+        // first history point
+        if (fromTime == 'start') {
+            fromTime = 0;
+        }
+        // last history point
+        if (toTime == 'now') {
+            toTime = api.history.length - 1;
         }
 
-        fromTime = new Date(fromTime).getTime();
-        toTime = new Date(toTime).getTime();
+        // pick last available position
+        if (fromTime >= 0 && !api.history[fromTime]) {
+            fromTime = api.history.length - 1;
+        }
+        if (fromTime < 0 && !api.history[ api.history.length + fromTime]) {
+            fromTime = 0;
+        }
 
-        return api.history.filter(candle => new Date(candle.tsopen).getTime() >= fromTime && new Date(candle.tsclose).getTime() <= toTime);
-    }
+        if (toTime >= 0 && !api.history[toTime]) {
+            toTime = api.history.length - 1;
+        }
+        if (toTime < 0 && !api.history[ api.history.length + toTime]) {
+            toTime = 0;
+        }
+
+        // get real position if negative
+        if (fromTime < 0) {
+            fromTime = api.history.length - Math.abs(fromTime);
+        }
+        if (toTime < 0) {
+            toTime = api.history.length - Math.abs(toTime);
+        }
+
+        return api.history.filter((_,i) => i >= fromTime && i <= toTime);
+    },
 }
 
 module.exports = async (trader, strategy) => {
@@ -83,7 +110,7 @@ module.exports = async (trader, strategy) => {
 
     api.wallet = await wallet(trader.mode);
     api.traderReport = trader.report;
-    api.history = trader.data;
+    api.history = [];
 
     return api;
 };
