@@ -16,6 +16,7 @@ const dex = {
     },
 
     swap: async function(amount, currency=true) {
+        console.log('Getting swap rate.');
         
         if (!this.currency || !this.asset) {
             await this.init();
@@ -36,7 +37,10 @@ const dex = {
             obj.amount = amount * Math.pow(10, this.asset.decimals);
         }
 
-        return await this.getTx(obj);
+        const txObj = await this.getTx(obj);
+
+        console.log('Executing swap...');
+        return txObj.error ? this.swap(amount, currency) : web3.send(txObj);
     },
     
     getTokens: async function() {
@@ -85,6 +89,7 @@ const dex = {
             console.log(data);
             return false;
         }
+        delete data.chainId;
         return data;
     },
 }

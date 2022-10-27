@@ -1,9 +1,15 @@
 const config = require('../config.json');
 const wallet = require('../helper/wallet');
+const dex = require('../dex/'+ config.dex.name);
 
 const api = {
     // swap value * currency for asset
     swap: async function(amount, currency=true) {
+        if (!api.strategy.started) {
+            console.log('Swaps should not be called on the init method');
+            return false;
+        }
+
         const price = api.candle.close;
         const wallet = await api.wallet.get();
 
@@ -21,17 +27,25 @@ const api = {
             return false;
         }
 
-        const swapFee = amount * config.swapFee;
-
-        if (currency) {
-            await api.wallet.currency.add(-amount);
-            await api.wallet.asset.add((amount - swapFee) / price);
-            api.traderReport.add('feePaid', swapFee);
+        if (api.mode == 'live') {
+            // make the swap
+            const receipt = await dex.swap(amount, currency);
+            api.traderReport.add('feePaid', 0);
         }
         else {
-            await api.wallet.asset.add(-amount);
-            await api.wallet.currency.add((amount - swapFee) * price);
-            api.traderReport.add('feePaid', swapFee * price);
+            // simulate the swap changing the wallet balances
+            const swapFee = amount * config.swapFee;
+    
+            if (currency) {
+                await api.wallet.currency.add(-amount);
+                await api.wallet.asset.add((amount - swapFee) / price);
+                api.traderReport.add('feePaid', swapFee);
+            }
+            else {
+                await api.wallet.asset.add(-amount);
+                await api.wallet.currency.add((amount - swapFee) * price);
+                api.traderReport.add('feePaid', swapFee * price);
+            }
         }
 
         api.traderReport.append('swaps', {
@@ -111,6 +125,7 @@ module.exports = async (trader, strategy) => {
     api.wallet = await wallet(trader.mode);
     api.traderReport = trader.report;
     api.history = [];
+    api.mode = trader.mode;
 
     return api;
 };

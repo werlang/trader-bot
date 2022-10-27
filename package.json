@@ -4,6 +4,7 @@
   "description": "trader bot",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js -w",
     "scanner": "node app.js -s",
     "backtest": "node app.js -b -w",
     "paper": "node app.js -p -w"

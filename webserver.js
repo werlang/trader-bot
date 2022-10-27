@@ -15,7 +15,7 @@ module.exports = data => {
     app.get('/data', (req, res) => {
         res.send(data);
     });
-    
+
     app.use(express.static(`${__dirname}/web/`));
     
     app.listen(port, () => {

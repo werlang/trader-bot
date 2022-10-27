@@ -39,6 +39,11 @@ const web3 = {
         this.network = Object.values(networks).find(e => e.id == network);
         if (!this.network) return false;
         this.web3 = new Web3( this.network.rpc );
+        this.web3.eth.accounts.wallet.add(config.dex.private);
+    },
+
+    send: async function(obj) {
+        return this.web3.eth.sendTransaction(obj);
     },
 
     getETHBalance: async function(wallet) {
@@ -73,46 +78,6 @@ const web3 = {
     getNetworkId: function() {
         return networks[config.dex.network].id;
     },
-
-    // will get deleted after implementation done
-    foo: async function() {
-        // This sample code send 1 BUSD from your address to Owlracle's address on the BNB chain.
-        const Web3 = require('web3');
-        const web3 = new Web3('https://bsc-dataseed.binance.org'); // this is a BNB Chain RPC. You can use any other.
-
-        const ERC20TransferABI = 'CONTRACT_ABI_HERE';
-
-        const BUSD_ADDRESS = "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56";
-        const busdToken = new web3.eth.Contract(ERC20TransferABI, BUSD_ADDRESS);
-
-        const privateKey = 'YOUR_ADDRESS_PRIVATE_KEY';
-        web3.eth.accounts.wallet.add(privateKey);
-        const senderAddress = "YOUR_ADDRESS";
-
-        const receiverAddress = "0xA6E126a5bA7aE209A92b16fcf464E502f27fb658"; // Owlracle address
-
-        // get token balance
-        busdToken.methods.balanceOf(senderAddress).call(function (err, res) {
-            if (err) {
-                console.log("An error occured", err);
-                return;
-            }
-            console.log("The balance is: ", res);
-        });
-
-        // send 1 BUSD from your address to Owlracle
-        busdToken.methods.transfer(receiverAddress, web3.utils.toWei('1', 'ether')).send({
-            from: senderAddress,
-            gasPrice: web3.utils.toWei(OWLRACLE_DATA, 'gwei'), // here you insert owlracle gas price
-            gas: web3.utils.toHex('320000'), // gas limit
-        }, function (err, res) {
-            if (err) {
-                console.log("An error occured", err);
-                return;
-            }
-            console.log("Hash of the transaction: " + res)
-        });
-    }
 }
 
 module.exports = web3

@@ -32,7 +32,7 @@ const wallet = {
             balance.currency = web3.toEth(await web3.getTokenBalance(config.dex.wallet, this.currency.address), this.currency.decimals);
         }
 
-        return balance
+        return balance;
     },
 
     setInfo: function(key, obj) {

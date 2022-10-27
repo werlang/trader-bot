@@ -40,14 +40,15 @@ const trader = {
             // history window: run steps without allowing strategy update
             this.report.set('startingTime', this.data[0].tsopen);
             this.currentCandle = this.data[0].tsopen;
+            const startingWallet = await this.api.getWallet();
             while (this.currentCandle < new Date(this.data[ this.data.length-1 ].tsclose)) {
                 const candle = await candleBuilder.buildCandle();
                 this.api.history.push(candle);
                 this.report.append('market', candle.close );
-                this.report.append('wallet', { ...(await this.api.getWallet()) } );
-                this.report.set('endingTime', candle.tsclose);        
+                this.report.append('wallet', { ...startingWallet } );
+                this.report.set('endingTime', candle.tsclose);
             }
-            console.log('Running paper trader...');
+            console.log(`Ready to trade... ${ this.mode == 'paper' ? 'On paper!' : ''}`);
         }
         else {
             console.log('This mode is not recognized');
