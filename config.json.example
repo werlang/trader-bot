@@ -7,10 +7,12 @@
         "symbol": "ETHUSDT"
     },
     "dex": {
+        "network": "ethereum",
         "name": "paraswap",
         "asset": "ETH",
         "currency": "USDT",
-        "wallet": "YOUR_WALLET"
+        "wallet": "YOUR_WALLET_ADDRESS",
+        "private": "YOUR_WALLET_PRIVATE_KEY"
     },
     "timeframe": 60,
     "strategy": "dca",

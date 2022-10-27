@@ -1,7 +1,10 @@
 {
   "name": "trader",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "trader bot",
+  "keywords": ["trading", "crypto", "defi", "trading-bot", "web3"],
+  "homepage": "https://github.com/werlang/trader-bot",
+  "repository": "github:werlang/trader-bot",
   "main": "app.js",
   "scripts": {
     "start": "node app.js -w",
@@ -9,8 +12,8 @@
     "backtest": "node app.js -b -w",
     "paper": "node app.js -p -w"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Pablo Werlang <pswerlang@gmail.com>",
+  "license": "GPL-3",
   "dependencies": {
     "dotenv": "^16.0.1",
     "express": "^4.18.1",

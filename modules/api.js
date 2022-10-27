@@ -66,6 +66,14 @@ const api = {
         return true;
     },
 
+    buy: async function(amount) {
+        return this.swap(amount, true);
+    },
+
+    sell: async function(amount) {
+        return this.swap(amount, false);
+    },
+
     getWallet: async function() {
         return await api.wallet.get();
     },
