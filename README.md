@@ -289,7 +289,7 @@ Some examples are [technicalindicators](https://github.com/anandanand84/technica
 
 # Contributions
 
-If you like this bot, and think you can contribute with its code, just create a pull request. I would love to integrate other dexes and exchanges on it.
+If you like this bot, and think you can contribute with its code, just create a pull request. I would love to integrate other dexes and exchanges on it. It would be very nice to include several community created sample strategies also.
 
 I also accept donations from any EVM compatible network (Ethereum, Polygon, BNB chain, Avalanche, Fantom, Arbitrum, Optimism, and so on).
 
