@@ -280,6 +280,12 @@ There are only a handful of methods you need to know about to create your own st
 
 Check the [dca.js](strategies/dca.js) file to get a feeling about how to build a strategy.
 
+## Other modules
+
+You can also install any other node modules that you think it might help you improving your strategy.
+
+Some examples are [technicalindicators](https://github.com/anandanand84/technicalindicators), [talib](https://github.com/oransel/node-talib), etc.
+
 
 # Contributions
 
