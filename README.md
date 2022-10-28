@@ -39,7 +39,7 @@ mysql> source asset/database.sql;
 
 Rename (or copy then rename) [.env.example](.env.example) file to `.env`. Then fill its contents according to your db configuration:
 
-```json
+```
 DB_USER="root"
 DB_PORT=3306
 DB_HOST="localhost"
@@ -241,14 +241,14 @@ The argument `candle` from the `update` method is an object, containing current 
 Example:
 ```json
 {
-    tsopen: 2022-05-08T03:00:00.000Z,
-    tsclose: 2022-05-08T03:59:59.999Z,
-    open: 2549.51,
-    close: 2545.08,
-    low: 2517,
-    high: 2553.29,
-    volume: 67955.88060000002,
-    samples: 76402
+    "tsopen": "2022-05-08T03:00:00.000Z",
+    "tsclose": "2022-05-08T03:59:59.999Z",
+    "open": 2549.51,
+    "close": 2545.08,
+    "low": 2517,
+    "high": 2553.29,
+    "volume": 67955.88060000002,
+    "samples": 76402
 }
 ```
 
@@ -260,8 +260,8 @@ There are only a handful of methods you need to know about to create your own st
 
 ```json
 {
-    asset: 0.0,
-    currency: 0.0
+    "asset": 0.0,
+    "currency": 0.0
 }
 ```
 
