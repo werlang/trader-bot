@@ -39,7 +39,7 @@ mysql> source asset/database.sql;
 
 Rename (or copy then rename) [.env.example](.env.example) file to `.env`. Then fill its contents according to your db configuration:
 
-```
+```json
 DB_USER="root"
 DB_PORT=3306
 DB_HOST="localhost"
@@ -50,7 +50,7 @@ WEBSERVER_PORT=3000
 
 Rename (or copy then rename) [config.json.example](config.json.example) file to `config.json`. Then fill its contents according to your db configuration:
 
-```
+```json
 {
     "fromTime": "2021-01-01 00:00:00.000",
     "toTime": "2021-12-21 00:00:00.000",
@@ -214,7 +214,7 @@ To write your strategy, you will need to create a file under the `strategies` fo
 
 This strategy needs to export an object with at least two methods: `init` and `update`:
 
-```
+```js
 module.exports = {
     init: async function() {
         // this is executed once, before start
@@ -239,7 +239,7 @@ The argument `candle` from the `update` method is an object, containing current 
 * `samples`: *(Number)*: Number of lower timeframe candles composing this entire candle.
   
 Example:
-```
+```json
 {
     tsopen: 2022-05-08T03:00:00.000Z,
     tsclose: 2022-05-08T03:59:59.999Z,
@@ -258,7 +258,7 @@ There are only a handful of methods you need to know about to create your own st
 
 * `getWallet()`: Returns an object representing the amount of currency and asset in the wallet
 
-```  
+```json
 {
     asset: 0.0,
     currency: 0.0
