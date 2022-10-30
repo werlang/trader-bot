@@ -1,4 +1,5 @@
 const config = require('../config.json');
+const telegram = require('../helper/telegram');
 const wallet = require('../helper/wallet');
 const dex = require('../dex/'+ config.dex.name);
 
@@ -11,7 +12,9 @@ const api = {
         }
 
         const price = api.candle.close;
-        const wallet = await api.wallet.get();
+        let wallet = await api.wallet.get();
+        let balance = 0;
+        let receipt = false;
 
         if (currency && wallet.currency < amount) {
             if (config.verbose > 0) {
@@ -29,7 +32,7 @@ const api = {
 
         if (api.mode == 'live') {
             // make the swap
-            const receipt = await dex.swap(amount, currency);
+            receipt = await dex.swap(amount, currency);
             api.traderReport.add('feePaid', 0);
         }
         else {
@@ -55,14 +58,34 @@ const api = {
             currency: currency,
         });
 
+        wallet = await api.wallet.get();
+        balance = (await api.getWalletBalance()).toFixed(4);
+
         if (config.verbose > 1) {
-            const wallet = await api.wallet.get();
             let msg = api.candle.tsclose.toISOString() + '\t';
             msg += `SWAPPED: ${ amount.toFixed(8) } ${ currency ? 'C' : 'A' } @ ${ price }\t`;
             msg += `WALLET: (A) ${ wallet.asset.toFixed(8) }, (C) ${ wallet.currency.toFixed(2) }\t`;
-            msg += `TOTAL BALANCE: $${ (await api.getWalletBalance()).toFixed(2) }`;
+            msg += `TOTAL BALANCE: $${ balance }`;
             console.log(msg);
         }
+
+        if (config.telegram.enabled && (api.mode == 'live' || api.mode == 'paper')) {
+            const alert = {
+                type: `${ api.mode.toUpperCase() } SWAP EXECUTED`,
+                fromToken: config.dex[ currency ? 'currency' : 'asset' ],
+                toToken: config.dex[ currency ? 'asset' : 'currency' ],
+                amount: amount,
+                price: price,
+                asset: wallet.asset.toFixed(8),
+                currency: wallet.currency.toFixed(4),
+                balance: balance,
+            };
+            if (receipt) {
+                alert.hash = receipt.transactionHash;
+            }
+            telegram.alert(alert);
+        }
+
         return true;
     },
 

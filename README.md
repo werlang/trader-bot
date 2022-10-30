@@ -67,6 +67,11 @@ Rename (or copy then rename) [config.json.example](config.json.example) file to 
         "wallet": "YOUR_WALLET_ADDRESS",
         "private": "YOUR_WALLET_PRIVATE_KEY"
     },
+    "telegram": {
+        "enabled": false,
+        "token": "TELEGRAM_BOT_TOKEN",
+        "chatId": "CHAT_ID"
+    },
     "timeframe": 60,
     "strategy": "dca",
     "verbose": 2,
@@ -98,6 +103,9 @@ Here is the descriptions of every field:
 * `dex.currency`: Token name for the currency you are wanting to trade the asset for.
 * `dex.wallet`: Your wallet address that will interact with the blockchain.
 * `dex.private`: Your wallet's private key.
+* `telegram.enabled`: Enable or disable Telegram alerts for swaps.
+* `telegram.token`: Telegram bot's token that will send alerts.
+* `telegram.chatId`: Telegram chat id of the group/user the bot will send alerts to.
 * `timeframe`: The amount of minutes for each candle. The time frame for your trades.
 * `strategy`: Name of your file under the `strategies` folder containing your strategy.
 * `verbose`: Amount of details you are willing the console to show (0-2);
@@ -286,6 +294,16 @@ You can also install any other node modules that you think it might help you imp
 
 Some examples are [technicalindicators](https://github.com/anandanand84/technicalindicators), [talib](https://github.com/oransel/node-talib), etc.
 
+
+# Receiving alerts
+
+The bot can send you alerts whenever it performs a swap. If you are willing to receive those alerts, you should set the `telegram.enabled` field to `true`.
+
+You also need to have a Telegram bot. If you don't have one, just go to their [reference page](https://core.telegram.org/bots) and learn how to create one.
+
+After that, you need to fill `telegram.token` and `telegram.chainId` fields in the config file.
+
+Done! From now on you will receive a Telegram message whenever your strategy perform a swap.
 
 # Contributions
 
