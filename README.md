@@ -288,12 +288,37 @@ There are only a handful of methods you need to know about to create your own st
 
 Check the [dca.js](strategies/dca.js) file to get a feeling about how to build a strategy.
 
-## Other modules
+# Technical Indicators
 
-You can also install any other node modules that you think it might help you improving your strategy.
+Since most stretegies need indicators to do their magic, this bot comes with [technicalindicators](https://www.npmjs.com/package/technicalindicators) module pre-installed. It can be accessed with `this.indicators`:
 
-Some examples are [technicalindicators](https://github.com/anandanand84/technicalindicators), [talib](https://github.com/oransel/node-talib), etc.
+```js
+...
+const sma = this.indicators.sma;
+const prices = [1,2,3,4,5,6,7,8,9,10,12,13,15];
+const period = 10;
+sma({period : period, values : prices});
+...
+```
+Go to the [module's documentation](https://www.npmjs.com/package/technicalindicators) to learn how to use each indicator.
 
+# Other modules
+You can also install any other node modules that you think it might help you improving your strategy (e.g. [node-fetch](https://www.npmjs.com/package/node-fetch)):
+
+```
+npm i node-fetch
+```
+
+Then you can use normally on your strategy:
+
+```js
+const fetch = require('node-fetch');
+
+...
+const req = await fetch('example.com/api-endpoint');
+const data = await req.json();
+...
+```
 
 # Receiving alerts
 

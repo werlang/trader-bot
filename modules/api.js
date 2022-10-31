@@ -2,6 +2,7 @@ const config = require('../config.json');
 const telegram = require('../helper/telegram');
 const wallet = require('../helper/wallet');
 const dex = require('../dex/'+ config.dex.name);
+const ti = require('technicalindicators');
 
 const api = {
     // swap value * currency for asset
@@ -151,6 +152,7 @@ module.exports = async (trader, strategy) => {
     strategy.getWalletBalance = api.getWalletBalance;
     strategy.swap = api.swap;
     strategy.getHistory = api.getHistory;
+    strategy.indicators = ti;
     api.strategy = strategy;
 
     api.wallet = await wallet(trader.mode);
