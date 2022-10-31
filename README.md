@@ -260,11 +260,11 @@ Example:
 }
 ```
 
+There are a handful of methods you need to know about to create your own strategy:
 
+## `getWallet()`: Promise\<object>
 
-There are only a handful of methods you need to know about to create your own strategy. **They are all async**:
-
-* `getWallet()`: Returns an object representing the amount of currency and asset in the wallet
+Returns an object representing the amount of currency and asset in the wallet
 
 ```json
 {
@@ -273,18 +273,64 @@ There are only a handful of methods you need to know about to create your own st
 }
 ```
 
-* `getWalletBalance()`: Same as getWallet, but returns a single number, representing the sum of currency and asset, converted to currency.
-* `getHistory(fromTime='start', toTime='end')`: Return an array of candles between `fromTime` and `toTime`. Both arguments can be positive or negative.
-  * Values from 0...N represent the desired nth candle since the strategy started.
-  * Values from -N...-1 represent the desired nth candle, decresing. (-1 is the last candle).
-  * `fromTime` can also be `'start'`: This is the same as 0.
-  * `toTime` can also be `'end'` or `undefined`: This is the same as -1.
-* `swap(amount, currency=true)`: Make the swap. If on live trade mode, the bot will call the dex and web3 to write the tx on the blockchain
-  * `amount` is a positive number indicating the amount of tokens you are willing to sell.
-  * `currency == true` means that you are willing to sell the currency for asset.
-  * `currency == false` means that you are willing to sell the asset for currency.
-* `buy(amount)`: Alias for `swap(amount, true)`.
-* `sell(amount)`: Alias for `swap(amount, false)`;
+## `getWalletBalance()`: Promise\<object>
+
+Same as getWallet, but returns a single number, representing the sum of currency and asset, converted to currency.
+
+## `getHistory(fromTime='start', toTime='end')`: Array
+
+Return an array of candles between `fromTime` and `toTime`. Both arguments can be positive or negative.
+
+* Values from 0...N represent the desired nth candle since the strategy started.
+* Values from -N...-1 represent the desired nth candle, decresing. (-1 is the last candle).
+* `fromTime` can also be `'start'`: This is the same as 0.
+* `toTime` can also be `'end'` or `undefined`: This is the same as -1.
+
+## `setHistory(callback)`
+
+Overrides the `candle` object received on the `update` method. This is very useful when you want to set custom values for the `candle` object at each step of your strategy (like setting custom indicator values for each candle), without needing to set it inside your `update` method.
+
+The `callback` argument is a function with the following format:
+```js
+function callback(candle) {
+    // your logic here
+    return candle;
+}
+```
+
+At each time step, your callback function will be called, and the returned candle will be replaced by the default candle value. Then you can use this custom candle inside your strategy.
+
+Check this example:
+
+```js
+strategy.init = async function() {
+    this.setHistory(candle => {
+        candle.myField = myMethod();
+        return candle;
+    });
+};
+
+strategy.update = async function(candle) {
+    // candle will have all regular fields, plus a myField value
+    // that will receive the return of myMethod, called at each step.
+};
+```
+
+## `swap(amount, currency=true)`: Promise\<Boolean>
+
+Make the swap. If on live trade mode, the bot will call the dex and web3 to write the tx on the blockchain
+
+* `amount` is a positive number indicating the amount of tokens you are willing to sell.
+* `currency == true` means that you are willing to sell the currency for asset.
+* `currency == false` means that you are willing to sell the asset for currency.
+
+## `buy(amount)`: Promise\<Boolean>
+
+Alias for `swap(amount, true)`.
+
+## `sell(amount)`: Promise\<Boolean>
+
+Alias for `swap(amount, false)`.
 
 Check the [dca.js](strategies/dca.js) file to get a feeling about how to build a strategy.
 

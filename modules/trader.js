@@ -77,7 +77,7 @@ const trader = {
         };
 
         this.api.candle = candle;
-        this.api.history.push(candle);
+        this.api.history.push( this.api.historyCallback ? this.api.historyCallback(candle) : candle );
         await this.strategy.update(candle);
         this.report.append('market', candle.close );
         this.report.append('wallet', { ...(await this.api.getWallet()) } );

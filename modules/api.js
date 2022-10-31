@@ -145,6 +145,10 @@ const api = {
 
         return api.history.filter((_,i) => i >= fromTime && i <= toTime);
     },
+
+    setHistory: function(callback) {
+        api.historyCallback = callback;
+    }
 }
 
 module.exports = async (trader, strategy) => {
@@ -152,6 +156,7 @@ module.exports = async (trader, strategy) => {
     strategy.getWalletBalance = api.getWalletBalance;
     strategy.swap = api.swap;
     strategy.getHistory = api.getHistory;
+    strategy.setHistory = api.setHistory;
     strategy.indicators = ti;
     api.strategy = strategy;
 
