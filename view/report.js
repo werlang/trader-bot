@@ -90,7 +90,23 @@ const report = {
         this.info = data;
         // copy old DATA to new object reference
         Object.entries(oldObj).forEach(([k,v]) => data[k] = v);
-    }
+    },
+
+    addIndicatorView: function(name, color) {
+        if (!report.info.indicators) {
+            report.info.indicators = {};
+        }
+
+        report.info.indicators[name] = {
+            color: color,
+            data: [],
+        };
+    },
+
+    updateIndicatorView: function(candle) {
+        Object.entries(report.info.indicators).forEach(([name,obj]) => obj.data.push( candle[name] ));
+    },
+
 }
 
 module.exports = () => {

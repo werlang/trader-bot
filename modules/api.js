@@ -148,7 +148,8 @@ const api = {
 
     setHistory: function(callback) {
         api.historyCallback = callback;
-    }
+    },
+
 }
 
 module.exports = async (trader, strategy) => {
@@ -157,6 +158,7 @@ module.exports = async (trader, strategy) => {
     strategy.swap = api.swap;
     strategy.getHistory = api.getHistory;
     strategy.setHistory = api.setHistory;
+    strategy.addIndicatorView = trader.report.addIndicatorView;
     strategy.indicators = ti;
     api.strategy = strategy;
 

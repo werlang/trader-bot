@@ -262,7 +262,7 @@ Example:
 
 There are a handful of methods you need to know about to create your own strategy:
 
-## `getWallet()`: Promise\<object>
+## `getWallet()`: Promise\<Object>
 
 Returns an object representing the amount of currency and asset in the wallet
 
@@ -273,7 +273,7 @@ Returns an object representing the amount of currency and asset in the wallet
 }
 ```
 
-## `getWalletBalance()`: Promise\<object>
+## `getWalletBalance()`: Promise\<Number>
 
 Same as getWallet, but returns a single number, representing the sum of currency and asset, converted to currency.
 
@@ -334,17 +334,35 @@ Alias for `swap(amount, false)`.
 
 Check the [dca.js](strategies/dca.js) file to get a feeling about how to build a strategy.
 
+## `addIndicatorView(name, color)`
+
+This method can be used to add custom indicators on the web chart. To use this first you must add a custom field on the candle object using the `setHistory` method.
+
+* `name`: The field name you added to the `candle` object using the `setHistory` method.
+* `color`: A string representing the color of the indicator line to be added to the chart. If the indicator is an object with several fields, you must send an array of colors.
+
+Example:
+
+```js
+this.SMA = new this.indicators.SMA({period: 60, values: []});
+this.addIndicatorView('SMA', '#ffffff');
+this.setHistory(candle => {
+    candle.SMA = this.SMA.nextValue(candle.close);
+    return candle;
+});
+```
+
+![image](https://user-images.githubusercontent.com/19828711/199316491-2faaa7b4-6341-4fb5-99ee-30084df6a22f.png)
+
 # Technical Indicators
 
 Since most stretegies need indicators to do their magic, this bot comes with [technicalindicators](https://www.npmjs.com/package/technicalindicators) module pre-installed. It can be accessed with `this.indicators`:
 
 ```js
-...
-const sma = this.indicators.sma;
+const SMA = this.indicators.SMA;
 const prices = [1,2,3,4,5,6,7,8,9,10,12,13,15];
 const period = 10;
-sma({period : period, values : prices});
-...
+SMA({ period: period, values: prices });
 ```
 Go to the [module's documentation](https://www.npmjs.com/package/technicalindicators) to learn how to use each indicator.
 

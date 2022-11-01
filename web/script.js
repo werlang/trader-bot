@@ -10,7 +10,7 @@ const timeData = data.wallet.map((e,i) => parseInt((new Date(data.startingTime).
 const chartOptions = { layout: { textColor: 'black', background: { type: 'solid', color: 'white' } } };
 const chart = LightweightCharts.createChart(document.body, {
     layout: {
-        backgroundColor: '#252B36',
+        backgroundColor: '#202534',
         textColor: '#a4a5aa',
     },
     grid: {
@@ -33,7 +33,8 @@ const chart = LightweightCharts.createChart(document.body, {
     // },
 });
 
-const marketSeries = chart.addAreaSeries({ lineColor: '#3257bd', topColor: '#3257bd70', bottomColor: '#3257bd20' });
+// market series
+const marketSeries = chart.addAreaSeries({ lineColor: '#3257bd', topColor: '#3257bd60', bottomColor: '#3257bd10' });
 marketSeries.priceScale().applyOptions({ mode: 3 });
 marketSeries.setData( timeData.map((e,i) => ({
     value: data.market[i],
@@ -58,6 +59,7 @@ const getColorRatio = i => {
     return `#${ r }${ g }${ b }`;
 }
 
+// wallet series
 const walletSeries = chart.addLineSeries();
 walletSeries.priceScale().applyOptions({ mode: 3 });
 walletSeries.setData( timeData.map((e,i) => ({
@@ -65,6 +67,44 @@ walletSeries.setData( timeData.map((e,i) => ({
     time: e,
     color: getColorRatio(i),
 })) );
+
+
+// custom series for indicators
+Object.values(data.indicators).forEach(indicator => {
+    let data = [];
+    const firstValid = indicator.data.find(e => e);
+    // data sent is an array of numbers (not object)
+    if (typeof firstValid === 'number') {
+        data[0] = timeData.map((e,i) => ({
+            value: indicator.data[i],
+            time: e,
+            color: indicator.color,
+        }));
+    }
+    // indicator is multiple lines
+    if (typeof firstValid === 'object') {
+        Object.keys(firstValid).forEach((k,ki) => {
+            data.push(timeData.map((e,i) => ({
+                value: indicator.data[i]?.[k],
+                time: e,
+                color: Array.isArray(indicator.color ) ? indicator.color[ki] : indicator.color,
+            })));
+        });
+    }
+    // console.log(data);
+
+    // plot indicator(s)
+    data.forEach(d => {
+        const indicators = chart.addLineSeries({
+            priceScaleId: 'left',
+            lineWidth: 2,
+            priceLineVisible: false,
+        });
+        indicators.priceScale().applyOptions({ mode: 0 });
+        indicators.setData(d);
+    });
+
+});
 
 
 const markers = data.swaps.map(e => ({

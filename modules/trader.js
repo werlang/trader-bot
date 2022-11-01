@@ -17,6 +17,7 @@ const trader = {
         this.report.set('timeframe', config.timeframe);
 
         candleBuilder.init(this);
+        await this.strategy.init();
 
         if (this.mode == 'backtest') {
             console.log('Running Backtest...');
@@ -43,10 +44,11 @@ const trader = {
             const startingWallet = await this.api.getWallet();
             while (this.currentCandle < new Date(this.data[ this.data.length-1 ].tsclose)) {
                 const candle = await candleBuilder.buildCandle();
-                this.api.history.push(candle);
+                this.api.history.push( this.api.historyCallback ? this.api.historyCallback(candle) : candle );
                 this.report.append('market', candle.close );
                 this.report.append('wallet', { ...startingWallet } );
                 this.report.set('endingTime', candle.tsclose);
+                this.report.updateIndicatorView(candle);
             }
             console.log(`Ready to trade... ${ this.mode == 'paper' ? 'On paper!' : ''}`);
         }
@@ -55,7 +57,6 @@ const trader = {
             return false;
         }
 
-        await this.strategy.init();
         this.strategy.started = true;
 
         this.running = true;
@@ -81,6 +82,8 @@ const trader = {
         await this.strategy.update(candle);
         this.report.append('market', candle.close );
         this.report.append('wallet', { ...(await this.api.getWallet()) } );
+        // for each indicator view, update data with candle info
+        this.report.updateIndicatorView(candle);
         this.report.set('endingTime', this.data[ this.data.length-1 ].tsclose);
     },
 };
