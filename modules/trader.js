@@ -45,7 +45,7 @@ const trader = {
             while (this.currentCandle < new Date(this.data[ this.data.length-1 ].tsclose)) {
                 const candle = await candleBuilder.buildCandle();
                 this.api.history.push( this.api.historyCallback ? this.api.historyCallback(candle) : candle );
-                this.report.append('market', candle.close );
+                this.report.append('market', candle );
                 this.report.append('wallet', { ...startingWallet } );
                 this.report.set('endingTime', candle.tsclose);
                 this.report.updateIndicatorView(candle);
@@ -80,7 +80,7 @@ const trader = {
         this.api.candle = candle;
         this.api.history.push( this.api.historyCallback ? this.api.historyCallback(candle) : candle );
         await this.strategy.update(candle);
-        this.report.append('market', candle.close );
+        this.report.append('market', candle );
         this.report.append('wallet', { ...(await this.api.getWallet()) } );
         // for each indicator view, update data with candle info
         this.report.updateIndicatorView(candle);

@@ -34,15 +34,18 @@ const chart = LightweightCharts.createChart(document.body, {
 });
 
 // market series
-const marketSeries = chart.addAreaSeries({ lineColor: '#3257bd', topColor: '#3257bd60', bottomColor: '#3257bd10' });
+const marketSeries = chart.addCandlestickSeries();
 marketSeries.priceScale().applyOptions({ mode: 3 });
 marketSeries.setData( timeData.map((e,i) => ({
-    value: data.market[i],
+    open: data.market[i].open,
+    close: data.market[i].close,
+    low: data.market[i].low,
+    high: data.market[i].high,
     time: e,
 })) );
 
 const getBalance = i => {
-    return data.wallet[i].currency + data.wallet[i].asset * data.market[i];
+    return data.wallet[i].currency + data.wallet[i].asset * data.market[i].close;
 }
 
 const getColorRatio = i => {
@@ -70,41 +73,43 @@ walletSeries.setData( timeData.map((e,i) => ({
 
 
 // custom series for indicators
-Object.values(data.indicators).forEach(indicator => {
-    let data = [];
-    const firstValid = indicator.data.find(e => e);
-    // data sent is an array of numbers (not object)
-    if (typeof firstValid === 'number') {
-        data[0] = timeData.map((e,i) => ({
-            value: indicator.data[i],
-            time: e,
-            color: indicator.color,
-        }));
-    }
-    // indicator is multiple lines
-    if (typeof firstValid === 'object') {
-        Object.keys(firstValid).forEach((k,ki) => {
-            data.push(timeData.map((e,i) => ({
-                value: indicator.data[i]?.[k],
+if (data.indicators) {
+    Object.values(data.indicators).forEach(indicator => {
+        let data = [];
+        const firstValid = indicator.data.find(e => e);
+        // data sent is an array of numbers (not object)
+        if (typeof firstValid === 'number') {
+            data[0] = timeData.map((e,i) => ({
+                value: indicator.data[i],
                 time: e,
-                color: Array.isArray(indicator.color ) ? indicator.color[ki] : indicator.color,
-            })));
+                color: indicator.color,
+            }));
+        }
+        // indicator is multiple lines
+        if (typeof firstValid === 'object') {
+            Object.keys(firstValid).forEach((k,ki) => {
+                data.push(timeData.map((e,i) => ({
+                    value: indicator.data[i]?.[k],
+                    time: e,
+                    color: Array.isArray(indicator.color ) ? indicator.color[ki] : indicator.color,
+                })));
+            });
+        }
+        // console.log(data);
+    
+        // plot indicator(s)
+        data.forEach(d => {
+            const indicators = chart.addLineSeries({
+                priceScaleId: 'left',
+                lineWidth: 2,
+                priceLineVisible: false,
+            });
+            indicators.priceScale().applyOptions({ mode: 0 });
+            indicators.setData(d);
         });
-    }
-    // console.log(data);
-
-    // plot indicator(s)
-    data.forEach(d => {
-        const indicators = chart.addLineSeries({
-            priceScaleId: 'left',
-            lineWidth: 2,
-            priceLineVisible: false,
-        });
-        indicators.priceScale().applyOptions({ mode: 0 });
-        indicators.setData(d);
+    
     });
-
-});
+}
 
 
 const markers = data.swaps.map(e => ({
@@ -149,10 +154,10 @@ chart.subscribeCrosshairMove(param => {
 	}
 
     const walletPrice = param.seriesPrices.get(walletSeries);
-    const marketPrice = param.seriesPrices.get(marketSeries);
+    const marketPrice = param.seriesPrices.get(marketSeries).close;
     legend.classList.remove('hidden');
 
-    const marketValue = (marketPrice / data.market[0] - 1) * 100;
+    const marketValue = (marketPrice / data.market[0].close - 1) * 100;
     const walletValue = (walletPrice / getBalance(0) - 1) * 100;
 
     const walletData = timeData.map((e,i) => ({

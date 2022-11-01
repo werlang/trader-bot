@@ -183,7 +183,7 @@ Check the port used by the webserver in the `.env` file, go to a web browser, an
 http://localhost:PORT
 ```
 
-![image](https://user-images.githubusercontent.com/19828711/198391164-c0091f40-09f2-4c72-ac38-c934a83dd833.png)
+![image](https://user-images.githubusercontent.com/19828711/199320776-0dfe2a84-62ee-44c8-be49-475fbdc4281f.png)
 
 ## Paper trade
 
@@ -352,7 +352,7 @@ this.setHistory(candle => {
 });
 ```
 
-![image](https://user-images.githubusercontent.com/19828711/199316491-2faaa7b4-6341-4fb5-99ee-30084df6a22f.png)
+![image](https://user-images.githubusercontent.com/19828711/199321031-f89aafe6-c511-4a1d-bd48-7709d95ffdff.png)
 
 # Technical Indicators
 

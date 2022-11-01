@@ -29,8 +29,8 @@ const report = {
     show: function() {
         const lastWalletInfo = this.info.wallet[ this.info.wallet.length-1 ];
         
-        this.info.startingPrice = this.info.market[0];
-        this.info.endingPrice = this.info.market[ this.info.market.length-1 ];
+        this.info.startingPrice = this.info.market[0].open;
+        this.info.endingPrice = this.info.market[ this.info.market.length-1 ].close;
         
         this.info.startingBalance = this.info.wallet[0].currency + this.info.wallet[0].asset * this.info.startingPrice;
         this.info.endingBalance = lastWalletInfo.currency + lastWalletInfo.asset * this.info.endingPrice;
@@ -56,7 +56,7 @@ const report = {
             return arr;
         })(this.info.wallet.length);
 
-        const balance = this.info.wallet.map((e,i) => e.currency + e.asset * this.info.market[i]);
+        const balance = this.info.wallet.map((e,i) => e.currency + e.asset * this.info.market[i].close);
         this.info.sharpe = pa.sharpeRatio(balance, riskFreeArray);
         this.info.drawDown = pa.maxDrawdown(balance);
 
@@ -104,7 +104,9 @@ const report = {
     },
 
     updateIndicatorView: function(candle) {
-        Object.entries(report.info.indicators).forEach(([name,obj]) => obj.data.push( candle[name] ));
+        if (report.info.indicators) {
+            Object.entries(report.info.indicators).forEach(([name,obj]) => obj.data.push( candle[name] ));
+        }
     },
 
 }
