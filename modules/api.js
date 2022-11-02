@@ -156,6 +156,8 @@ module.exports = async (trader, strategy) => {
     strategy.getWallet = api.getWallet;
     strategy.getWalletBalance = api.getWalletBalance;
     strategy.swap = api.swap;
+    strategy.buy = api.buy;
+    strategy.sell = api.sell;
     strategy.getHistory = api.getHistory;
     strategy.setHistory = api.setHistory;
     strategy.addIndicatorView = trader.report.addIndicatorView;

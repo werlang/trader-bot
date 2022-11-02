@@ -8,6 +8,10 @@ const trader = {
         this.currentCandle = new Date(config.fromTime);
         
         this.strategy = require(`../strategies/${ config.strategy }`);
+        this.strategy.settings = (() => {
+            try { return require(`../strategies/${ config.strategy }.json`); }
+            catch(err) { return false; }
+        })();
         this.report = report();
 
         this.data = [];

@@ -76,7 +76,7 @@ const report = {
         msg += `Num. Swaps: \t\t${this.info.swaps.length}\n`;
         msg += `Fee paid: \t\t$${this.info.feePaid.toFixed(2)}\n\n`;
 
-        msg += `APR: \t\t\t${this.info.apr.toFixed(4)}%\n`;
+        msg += `APRD: \t\t\t${this.info.apr.toFixed(4)}%\n`;
         msg += `APY: \t\t\t${this.info.apy.toFixed(4)}%\n\n`;
         msg += `Sharpe ratio: \t\t${this.info.sharpe.toFixed(4)}\n`;
         msg += `Max. Drawdown: \t\t${this.info.drawDown.toFixed(4)}\n`;
