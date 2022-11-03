@@ -31,11 +31,11 @@ const chart = LightweightCharts.createChart(document.body, {
     // leftPriceScale: {
     //     visible: true,
     // },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
 });
 
 // market series
 const marketSeries = chart.addCandlestickSeries();
-marketSeries.priceScale().applyOptions({ mode: 3 });
 marketSeries.setData( timeData.map((e,i) => ({
     open: data.market[i].open,
     close: data.market[i].close,
@@ -63,8 +63,15 @@ const getColorRatio = i => {
 }
 
 // wallet series
-const walletSeries = chart.addLineSeries();
-walletSeries.priceScale().applyOptions({ mode: 3 });
+const walletSeries = chart.addLineSeries({
+    priceScaleId: 'left',
+    overlay: true,
+    scaleMargins: {
+        top: 0.8,
+        bottom: 0,
+    },
+});
+// walletSeries.priceScale().applyOptions({ visible: true });
 walletSeries.setData( timeData.map((e,i) => ({
     value: getBalance(i),
     time: e,
@@ -76,7 +83,8 @@ walletSeries.setData( timeData.map((e,i) => ({
 if (data.indicators) {
     Object.values(data.indicators).forEach(indicator => {
         let data = [];
-        const firstValid = indicator.data.find(e => e);
+        // get first valid starting from last.
+        const firstValid = [...indicator.data].reverse().find(e => e);
         // data sent is an array of numbers (not object)
         if (typeof firstValid === 'number') {
             data[0] = timeData.map((e,i) => ({
@@ -100,11 +108,11 @@ if (data.indicators) {
         // plot indicator(s)
         data.forEach(d => {
             const indicators = chart.addLineSeries({
-                priceScaleId: 'left',
+                // priceScaleId: 'left',
                 lineWidth: 2,
                 priceLineVisible: false,
+                axisLabelVisible: false,
             });
-            indicators.priceScale().applyOptions({ mode: 0 });
             indicators.setData(d);
         });
     
