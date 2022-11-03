@@ -13,6 +13,7 @@ const api = {
         }
 
         const price = api.candle.close;
+        const tradeTime = api.candle.tsopen;
         let wallet = await api.wallet.get();
         let balance = 0;
         let receipt = false;
@@ -53,7 +54,7 @@ const api = {
         }
 
         api.traderReport.append('swaps', {
-            time: api.candle.tsopen,
+            time: tradeTime,
             price: price,
             amount: amount,
             currency: currency,
@@ -151,7 +152,8 @@ const api = {
     },
 
     getTime: function(format) {
-        const date = api.history[ api.history.length - 1 ].tsopen;
+        const date = api.history[ api.history.length - 1 ]?.tsopen;
+        if (!date) return false;
         const obj = {
             index: api.history.length,
             timestamp: date.getTime(),

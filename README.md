@@ -183,7 +183,7 @@ Check the port used by the webserver in the `.env` file, go to a web browser, an
 http://localhost:PORT
 ```
 
-![image](https://user-images.githubusercontent.com/19828711/199320776-0dfe2a84-62ee-44c8-be49-475fbdc4281f.png)
+![image](https://user-images.githubusercontent.com/19828711/199817800-d44caf5b-5e6a-43f0-a04c-fcb15f4b7bfb.png)
 
 ## Paper trade
 

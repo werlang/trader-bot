@@ -4,8 +4,7 @@ const data = await (async () => {
 })();
 // console.log(data);
 
-const stepTime = (new Date(data.endingTime).getTime() - new Date(data.startingTime).getTime()) / data.wallet.length;
-const timeData = data.wallet.map((e,i) => parseInt((new Date(data.startingTime).getTime() + parseInt(stepTime * i)) / 1000));
+const timeData = data.market.map(e => parseInt(new Date(e.tsopen).getTime() / 1000));
 
 const chartOptions = { layout: { textColor: 'black', background: { type: 'solid', color: 'white' } } };
 const chart = LightweightCharts.createChart(document.body, {
