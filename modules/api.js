@@ -150,6 +150,22 @@ const api = {
         api.historyCallback = callback;
     },
 
+    getTime: function(format) {
+        const date = api.history[ api.history.length - 1 ].tsopen;
+        const obj = {
+            index: api.history.length,
+            timestamp: date.getTime(),
+            date: date,
+        }
+        if (!format) {
+            return obj;
+        }
+        if (obj[format]) {
+            return obj[format];
+        }
+        return false;
+    },
+
 }
 
 module.exports = async (trader, strategy) => {
@@ -162,6 +178,7 @@ module.exports = async (trader, strategy) => {
     strategy.setHistory = api.setHistory;
     strategy.addIndicatorView = trader.report.addIndicatorView;
     strategy.indicators = ti;
+    strategy.getTime = api.getTime;
     api.strategy = strategy;
 
     api.wallet = await wallet(trader.mode);

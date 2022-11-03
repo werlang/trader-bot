@@ -247,16 +247,16 @@ The argument `candle` from the `update` method is an object, containing current 
 * `samples`: *(Number)*: Number of lower timeframe candles composing this entire candle.
   
 Example:
-```json
+```js
 {
-    "tsopen": "2022-05-08T03:00:00.000Z",
-    "tsclose": "2022-05-08T03:59:59.999Z",
-    "open": 2549.51,
-    "close": 2545.08,
-    "low": 2517,
-    "high": 2553.29,
-    "volume": 67955.88060000002,
-    "samples": 76402
+    tsopen: "2022-05-08T03:00:00.000Z",
+    tsclose: "2022-05-08T03:59:59.999Z",
+    open: 2549.51,
+    close: 2545.08,
+    low: 2517,
+    high: 2553.29,
+    volume: 67955.88060000002,
+    samples: 76402
 }
 ```
 
@@ -266,10 +266,10 @@ There are a handful of methods you need to know about to create your own strateg
 
 Returns an object representing the amount of currency and asset in the wallet
 
-```json
+```js
 {
-    "asset": 0.0,
-    "currency": 0.0
+    asset: Number,
+    currency: Number
 }
 ```
 
@@ -333,6 +333,23 @@ Alias for `swap(amount, true)`.
 Alias for `swap(amount, false)`.
 
 Check the [dca.js](strategies/dca.js) file to get a feeling about how to build a strategy.
+
+## `getTime(format)`: Object | Date | Number
+
+Return the current time of the simulation. `format` argument can be either:
+
+* `index`: The method will return the number of candles since the start of the process. 0 == first candle.
+* `timestamp`: The method will return the current candle timestamp.
+* `date`: The method will return the Date object of the current candle.
+* `undefined`: The method will return an object with all the following format.
+
+```js
+{
+    index: Number,
+    timestamp: Number,
+    date: Date
+}
+```
 
 ## `addIndicatorView(name, color)`
 
