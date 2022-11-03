@@ -21,27 +21,9 @@
 // }
 
 // >>>   API   <<<
-// you can use the following methods inside your strategy:
-// getWallet():
-//     Returns an object representing the amount of currency and asset in the wallet:
-//     { asset: 0.0, currency: 0.0 }
-// getWalletBalance():
-//     Same as getWallet, but returns a single number, representing the sum of currency and asset, converted to currency
-// getHistory(fromTime='start', toTime='end'):
-//     Return an array of candles between fromTime and toTime. Both arguments can be positive or negative.
-//     Values from 0...N represent the desired nth candle since the strategy started
-//     Values from -N...-1 represent the desired nth candle, decresing. (-1 is the last candle).
-//     fromTime can also be 'start': This is the same as 0.
-//     toTime can also be 'end' or undefined: This is the same as -1.
-// swap(amount, currency=true):
-//     Make the swap. If on live trade, will call the dex and web3 to write the tx on the blockchain
-//     amount is a positive number indicating the amount of tokens you are willing to sell.
-//     currency == true means that you are willing to sell the currency for asset.
-//     currency == false means that you are willing to sell the asset for currency.
-// buy(amount):
-//     Alias for swap(amount, true)
-// sell(amount):
-//     Alias for swap(amount, false)
+// There are several methods you can use inside your strategy, to know about and control things like time, wallet info, swaps, and the like.
+// Go to https://github.com/werlang/trader-bot and have a good look on all of them.
+
 module.exports = {
 
     init: async function() {
