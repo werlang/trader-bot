@@ -260,6 +260,23 @@ Example:
 }
 ```
 
+You can also create a `.json` file with the same name as your strategy file. The bot will automatically import it and expose its contents on `this.settings.FIELD`:
+
+`myStrategy.json`
+```json
+{
+    "myField": "value"
+}
+```
+
+`myStrategy.js`
+```js
+strategy.update: async function(candle) {
+    const field = this.settings.myField;
+    console.log(field); // will print 'value'
+}
+```
+
 There are a handful of methods you need to know about to create your own strategy:
 
 ## `getWallet()`: Promise\<Object>
